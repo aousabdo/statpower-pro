@@ -9,12 +9,17 @@ export default function ChiSquare() {
   const [effectSize, setEffectSize] = useState(0.3);
   const [power, setPower] = useState(0.8);
   const [sigLevel, setSigLevel] = useState(0.05);
-  const [result, setResult] = useState(null);
   const exportRef = useRef(null);
 
+  const computeResult = (w, d, p, s) => {
+    const N = pwrChisqTest({ w, df: d, power: p, sigLevel: s });
+    return { N, df: d, effectSize: w, power: p, sigLevel: s };
+  };
+
+  const [result, setResult] = useState(() => computeResult(0.3, 1, 0.8, 0.05));
+
   const handleCalculate = () => {
-    const N = pwrChisqTest({ w: effectSize, df, power, sigLevel });
-    setResult({ N, df, effectSize, power, sigLevel });
+    setResult(computeResult(effectSize, df, power, sigLevel));
   };
 
   const curveData = useMemo(() => {

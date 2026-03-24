@@ -8,21 +8,25 @@ export default function OneSidedVsTwoSided() {
   const [effectSize, setEffectSize] = useState(0.5);
   const [power, setPower] = useState(0.8);
   const [sigLevel, setSigLevel] = useState(0.05);
-  const [result, setResult] = useState(null);
   const exportRef = useRef(null);
 
-  const handleCompare = () => {
-    const nTwoSided = pwrTTest({ d: effectSize, power, sigLevel, type: 'two.sample', alternative: 'two.sided' });
-    const nOneSided = pwrTTest({ d: effectSize, power, sigLevel, type: 'two.sample', alternative: 'greater' });
-
-    setResult({
+  const computeResult = (d, p, s) => {
+    const nTwoSided = pwrTTest({ d, power: p, sigLevel: s, type: 'two.sample', alternative: 'two.sided' });
+    const nOneSided = pwrTTest({ d, power: p, sigLevel: s, type: 'two.sample', alternative: 'greater' });
+    return {
       data: [
         { type: 'Two-Sided', n: nTwoSided, total: nTwoSided * 2 },
         { type: 'One-Sided', n: nOneSided, total: nOneSided * 2 },
       ],
       savings: nTwoSided - nOneSided,
       savingsPercent: (((nTwoSided - nOneSided) / nTwoSided) * 100).toFixed(1),
-    });
+    };
+  };
+
+  const [result, setResult] = useState(() => computeResult(0.5, 0.8, 0.05));
+
+  const handleCompare = () => {
+    setResult(computeResult(effectSize, power, sigLevel));
   };
 
   return (

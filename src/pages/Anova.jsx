@@ -9,12 +9,17 @@ export default function Anova() {
   const [effectSize, setEffectSize] = useState(0.25);
   const [power, setPower] = useState(0.8);
   const [sigLevel, setSigLevel] = useState(0.05);
-  const [result, setResult] = useState(null);
   const exportRef = useRef(null);
 
+  const computeResult = (k, f, p, s) => {
+    const n = pwrAnovaTest({ k, f, power: p, sigLevel: s });
+    return { n, total: n * k, groups: k, effectSize: f, power: p, sigLevel: s };
+  };
+
+  const [result, setResult] = useState(() => computeResult(3, 0.25, 0.8, 0.05));
+
   const handleCalculate = () => {
-    const n = pwrAnovaTest({ k: groups, f: effectSize, power, sigLevel });
-    setResult({ n, total: n * groups, groups, effectSize, power, sigLevel });
+    setResult(computeResult(groups, effectSize, power, sigLevel));
   };
 
   const curveData = useMemo(() => {

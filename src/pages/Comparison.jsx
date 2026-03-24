@@ -10,23 +10,21 @@ export default function Comparison() {
   const [effectSize, setEffectSize] = useState(0.5);
   const [power, setPower] = useState(0.8);
   const [sigLevel, setSigLevel] = useState(0.05);
-  const [result, setResult] = useState(null);
   const exportRef = useRef(null);
 
-  const handleCompare = () => {
+  const computeComparison = (d, p, s) => {
     const types = ['two.sample', 'one.sample', 'paired'];
     const labels = ['Two-Sample', 'One-Sample', 'Paired'];
-
-    const data = types.map((type, i) => {
-      const n = pwrTTest({ d: effectSize, power, sigLevel, type });
-      return {
-        type: labels[i],
-        perGroup: n,
-        total: type === 'two.sample' ? n * 2 : n,
-      };
+    return types.map((type, i) => {
+      const n = pwrTTest({ d, power: p, sigLevel: s, type });
+      return { type: labels[i], perGroup: n, total: type === 'two.sample' ? n * 2 : n };
     });
+  };
 
-    setResult(data);
+  const [result, setResult] = useState(() => computeComparison(0.5, 0.8, 0.05));
+
+  const handleCompare = () => {
+    setResult(computeComparison(effectSize, power, sigLevel));
   };
 
   return (

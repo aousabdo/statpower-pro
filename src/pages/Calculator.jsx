@@ -10,12 +10,16 @@ const TEST_TYPES = [
   { value: 'paired', label: 'Paired' },
 ];
 
+const DEFAULTS = { d: 0.5, power: 0.8, sigLevel: 0.05, type: 'two.sample' };
+const INITIAL_N = pwrTTest(DEFAULTS);
+const INITIAL_RESULT = { n: INITIAL_N, total: INITIAL_N * 2, testType: DEFAULTS.type, effectSize: DEFAULTS.d, power: DEFAULTS.power, sigLevel: DEFAULTS.sigLevel };
+
 export default function Calculator() {
   const [testType, setTestType] = useState('two.sample');
   const [effectSize, setEffectSize] = useState(0.5);
   const [power, setPower] = useState(0.8);
   const [sigLevel, setSigLevel] = useState(0.05);
-  const [result, setResult] = useState(null);
+  const [result, setResult] = useState(INITIAL_RESULT);
   const exportRef = useRef(null);
 
   const handleCalculate = () => {
