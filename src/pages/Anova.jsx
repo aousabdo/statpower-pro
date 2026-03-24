@@ -1,3 +1,4 @@
+import ChartWatermark from '../components/ChartWatermark';
 import { useState, useRef, useMemo } from 'react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ReferenceLine } from 'recharts';
 import Slider from '../components/Slider';
@@ -88,7 +89,7 @@ export default function Anova() {
                     <ExportButton targetRef={exportRef} filename="anova-power-analysis" />
                   </div>
                   <div className="card-body">
-                    <div className="chart-container">
+                    <div className="chart-container"><ChartWatermark />
                       <ResponsiveContainer width="100%" height="100%">
                         <LineChart data={curveData} margin={{ top: 5, right: 30, left: 10, bottom: 5 }}>
                           <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f2" />

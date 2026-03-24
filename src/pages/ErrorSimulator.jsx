@@ -1,3 +1,4 @@
+import ChartWatermark from '../components/ChartWatermark';
 import { useState, useRef, useMemo } from 'react';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ReferenceLine } from 'recharts';
 import Slider from '../components/Slider';
@@ -69,7 +70,7 @@ export default function ErrorSimulator() {
                 <ExportButton targetRef={exportRef} filename="error-simulation" />
               </div>
               <div className="card-body">
-                <div className="chart-container-tall">
+                <div className="chart-container-tall"><ChartWatermark />
                   <ResponsiveContainer width="100%" height="100%">
                     <AreaChart data={chartData} margin={{ top: 5, right: 30, left: 10, bottom: 5 }}>
                       <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f2" />

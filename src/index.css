@@ -80,50 +80,30 @@ body {
 }
 
 .sidebar-header {
-  padding: 24px 20px 20px;
+  padding: 20px 20px 16px;
   border-bottom: 1px solid var(--border-light);
 }
 
 .sidebar-brand {
-  display: flex;
-  align-items: center;
-  gap: 10px;
+  display: block;
   text-decoration: none;
-  color: var(--text-primary);
 }
 
-.sidebar-brand-icon {
-  width: 36px;
-  height: 36px;
-  background: var(--accent);
-  border-radius: var(--radius-sm);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: white;
-  font-weight: 700;
-  font-size: 14px;
-  letter-spacing: -0.5px;
+.sidebar-logo {
+  width: 100%;
+  max-width: 180px;
+  height: auto;
+  display: block;
 }
 
-.sidebar-brand-text {
-  display: flex;
-  flex-direction: column;
-}
-
-.sidebar-brand-name {
+.sidebar-app-name {
+  font-size: 12px;
   font-weight: 600;
-  font-size: 15px;
-  line-height: 1.2;
-  letter-spacing: -0.3px;
-}
-
-.sidebar-brand-sub {
-  font-size: 11px;
   color: var(--text-tertiary);
-  font-weight: 400;
-  letter-spacing: 0.3px;
   text-transform: uppercase;
+  letter-spacing: 1.5px;
+  margin-top: 10px;
+  padding-left: 2px;
 }
 
 .sidebar-nav {
@@ -493,11 +473,27 @@ input[type="range"]::-moz-range-thumb {
 .chart-container {
   width: 100%;
   height: 400px;
+  position: relative;
 }
 
 .chart-container-tall {
   width: 100%;
   height: 500px;
+  position: relative;
+}
+
+.chart-watermark {
+  position: absolute;
+  bottom: 36px;
+  right: 24px;
+  opacity: 0.08;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.chart-watermark img {
+  height: 32px;
+  width: auto;
 }
 
 /* ─── Data Table ─────────────────────────────────────────────── */

@@ -60,7 +60,7 @@ export default function App() {
         <button className="hamburger" onClick={() => setSidebarOpen(!sidebarOpen)}>
           {sidebarOpen ? <X size={22} /> : <Menu size={22} />}
         </button>
-        <span className="mobile-title">StatPower Pro</span>
+        <img src="/logo-color.png" alt="Analytica DSS" style={{ height: 28 }} />
       </div>
 
       {/* Overlay */}
@@ -72,13 +72,10 @@ export default function App() {
       {/* Sidebar */}
       <aside className={`sidebar ${sidebarOpen ? 'open' : ''}`}>
         <div className="sidebar-header">
-          <div className="sidebar-brand">
-            <div className="sidebar-brand-icon">SP</div>
-            <div className="sidebar-brand-text">
-              <span className="sidebar-brand-name">StatPower Pro</span>
-              <span className="sidebar-brand-sub">Research Design Toolkit</span>
-            </div>
-          </div>
+          <a href="https://analyticadss.com" target="_blank" rel="noopener noreferrer" className="sidebar-brand">
+            <img src="/logo-color.png" alt="Analytica Data Science Solutions" className="sidebar-logo" />
+          </a>
+          <div className="sidebar-app-name">StatPower Pro</div>
         </div>
 
         <nav className="sidebar-nav">
@@ -99,7 +96,9 @@ export default function App() {
         </nav>
 
         <div className="sidebar-footer">
-          Built by <a href="https://analyticadss.com" target="_blank" rel="noopener noreferrer">Analytica DSS</a>
+          <a href="https://analyticadss.com" target="_blank" rel="noopener noreferrer">
+            analyticadss.com
+          </a>
         </div>
       </aside>
 

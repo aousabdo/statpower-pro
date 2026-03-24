@@ -1,3 +1,4 @@
+import ChartWatermark from '../components/ChartWatermark';
 import { useState, useRef, useMemo } from 'react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Area, ComposedChart } from 'recharts';
 import Slider from '../components/Slider';
@@ -65,7 +66,7 @@ export default function CIExplorer() {
                 <ExportButton targetRef={exportRef} filename="ci-width-explorer" />
               </div>
               <div className="card-body">
-                <div className="chart-container-tall">
+                <div className="chart-container-tall"><ChartWatermark />
                   <ResponsiveContainer width="100%" height="100%">
                     <LineChart data={data} margin={{ top: 5, right: 30, left: 10, bottom: 5 }}>
                       <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f2" />
@@ -97,7 +98,7 @@ export default function CIExplorer() {
                 <p className="card-subtitle">Upper and lower bounds as sample size increases</p>
               </div>
               <div className="card-body">
-                <div className="chart-container">
+                <div className="chart-container"><ChartWatermark />
                   <ResponsiveContainer width="100%" height="100%">
                     <ComposedChart data={data} margin={{ top: 5, right: 30, left: 10, bottom: 5 }}>
                       <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f2" />

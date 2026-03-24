@@ -1,3 +1,4 @@
+import ChartWatermark from '../components/ChartWatermark';
 import { useState, useRef } from 'react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from 'recharts';
 import Slider from '../components/Slider';
@@ -69,7 +70,7 @@ export default function OneSidedVsTwoSided() {
                     <ExportButton targetRef={exportRef} filename="onesided-vs-twosided" />
                   </div>
                   <div className="card-body">
-                    <div className="chart-container">
+                    <div className="chart-container"><ChartWatermark />
                       <ResponsiveContainer width="100%" height="100%">
                         <BarChart data={result.data} margin={{ top: 20, right: 30, left: 10, bottom: 5 }} barSize={80}>
                           <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f2" />
