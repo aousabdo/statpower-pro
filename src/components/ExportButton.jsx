@@ -44,8 +44,8 @@ export default function ExportButton({ targetRef, filename = 'statpower-results'
 
     // ── All values below are in 2x pixel space (matching scale:2) ──
     const pad = 120;
-    const headerH = 240;
-    const footerH = 160;
+    const headerH = 320;
+    const footerH = 200;
     const gap = 48;
     const totalW = contentCanvas.width + pad * 2;
     const totalH = headerH + gap + contentCanvas.height + gap + footerH;
@@ -59,19 +59,19 @@ export default function ExportButton({ targetRef, filename = 'statpower-results'
     ctx.fillStyle = '#ffffff';
     ctx.fillRect(0, 0, totalW, totalH);
 
-    // ── Header logo — prominent ──
-    const logoH = 140;
-    const logoW = logo.naturalWidth ? (logo.naturalWidth / logo.naturalHeight) * logoH : 420;
+    // ── Header logo — BIG and prominent ──
+    const logoH = 220;
+    const logoW = logo.naturalWidth ? (logo.naturalWidth / logo.naturalHeight) * logoH : 660;
     ctx.drawImage(logo, pad, (headerH - logoH) / 2, logoW, logoH);
 
     // Right side branding
     ctx.textAlign = 'right';
     ctx.fillStyle = '#09090b';
-    ctx.font = '700 48px Inter, -apple-system, sans-serif';
-    ctx.fillText('StatPower Pro', totalW - pad, headerH / 2 - 10);
+    ctx.font = '700 64px Inter, -apple-system, sans-serif';
+    ctx.fillText('StatPower Pro', totalW - pad, headerH / 2 - 14);
     ctx.fillStyle = '#52525b';
-    ctx.font = '500 28px Inter, -apple-system, sans-serif';
-    ctx.fillText('Research Design Toolkit', totalW - pad, headerH / 2 + 30);
+    ctx.font = '500 36px Inter, -apple-system, sans-serif';
+    ctx.fillText('Research Design Toolkit', totalW - pad, headerH / 2 + 40);
 
     // Teal divider
     ctx.strokeStyle = '#0d9488';
@@ -95,21 +95,21 @@ export default function ExportButton({ targetRef, filename = 'statpower-results'
     ctx.lineTo(totalW - pad, footerY);
     ctx.stroke();
 
-    // Footer logo — clearly visible
-    const footLogoH = 60;
-    const footLogoW = logo.naturalWidth ? (logo.naturalWidth / logo.naturalHeight) * footLogoH : 200;
+    // Footer logo — big and clear
+    const footLogoH = 100;
+    const footLogoW = logo.naturalWidth ? (logo.naturalWidth / logo.naturalHeight) * footLogoH : 300;
     ctx.drawImage(logo, pad, footerY + 40, footLogoW, footLogoH);
 
     // Footer text
     ctx.textAlign = 'right';
     ctx.fillStyle = '#52525b';
-    ctx.font = '600 28px Inter, -apple-system, sans-serif';
-    ctx.fillText('analyticadss.com', totalW - pad, footerY + 56);
+    ctx.font = '600 36px Inter, -apple-system, sans-serif';
+    ctx.fillText('analyticadss.com', totalW - pad, footerY + 72);
     ctx.fillStyle = '#71717a';
-    ctx.font = '400 24px Inter, -apple-system, sans-serif';
+    ctx.font = '400 28px Inter, -apple-system, sans-serif';
     ctx.fillText(
       new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }),
-      totalW - pad, footerY + 92
+      totalW - pad, footerY + 112
     );
 
     return final;

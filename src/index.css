@@ -570,10 +570,10 @@ input[type="range"]::-moz-range-thumb {
 .chart-container-tall::after {
   content: '';
   position: absolute;
-  bottom: 28px;
-  right: 16px;
-  width: 180px;
-  height: 108px;
+  bottom: 24px;
+  right: 12px;
+  width: 260px;
+  height: 156px;
   background: url('/analytica-logo.png') no-repeat center / contain;
   opacity: 0.10;
   pointer-events: none;

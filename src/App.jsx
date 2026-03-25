@@ -181,7 +181,7 @@ export default function App() {
             <img
               src={import.meta.env.BASE_URL + 'analytica-logo.png'}
               alt="Analytica DSS"
-              style={{ height: 52, width: 'auto' }}
+              style={{ height: 80, width: 'auto' }}
             />
           </a>
         </div>
