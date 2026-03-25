@@ -129,14 +129,10 @@ export default function App() {
       <aside className={`sidebar ${sidebarOpen ? 'open' : ''}`}>
         <div className="sidebar-header">
           <div className="sidebar-brand">
-            <img
-              src={import.meta.env.BASE_URL + 'analytica-logo.png'}
-              alt="Analytica DSS"
-              style={{ height: 28, marginRight: 2 }}
-            />
+            <div className="sidebar-brand-icon">SP</div>
             <div className="sidebar-brand-text">
               <span className="sidebar-brand-name">StatPower Pro</span>
-              <span className="sidebar-brand-sub">by Analytica DSS</span>
+              <span className="sidebar-brand-sub">Research Design Toolkit</span>
             </div>
           </div>
         </div>
@@ -159,13 +155,14 @@ export default function App() {
         </nav>
 
         <div className="sidebar-footer">
-          <a href="https://analyticadss.com" target="_blank" rel="noopener noreferrer">
+          <a href="https://analyticadss.com" target="_blank" rel="noopener noreferrer" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}>
             <img
               src={import.meta.env.BASE_URL + 'analytica-logo.png'}
               alt="Analytica DSS"
-              style={{ height: 20, opacity: 0.6 }}
+              style={{ height: 22 }}
             />
           </a>
+          <div style={{ fontSize: 10, color: 'var(--text-tertiary)', marginTop: 4 }}>Built by Analytica DSS</div>
         </div>
       </aside>
 
