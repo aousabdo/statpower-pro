@@ -1,55 +1,76 @@
-import { useState, useRef, useMemo } from 'react';
+import { useState, useRef, useMemo, useEffect } from 'react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ReferenceLine } from 'recharts';
 import Slider from '../components/Slider';
 import ExportButton from '../components/ExportButton';
-import { pwrTTest, powerCurveData } from '../lib/statistics';
+import { minimumDetectableEffect } from '../lib/statistics';
 
 const TEST_TYPES = [
-  { value: 'two.sample', label: 'Two-Sample' },
-  { value: 'one.sample', label: 'One-Sample' },
-  { value: 'paired', label: 'Paired' },
+  { value: 'ttest', label: 'T-Test' },
+  { value: 'anova', label: 'ANOVA' },
+  { value: 'chisq', label: 'Chi-Square' },
+  { value: 'correlation', label: 'Correlation' },
 ];
 
-export default function Calculator() {
-  const [testType, setTestType] = useState('two.sample');
-  const [effectSize, setEffectSize] = useState(0.5);
+export default function MinDetectableEffect() {
+  const [sampleSize, setSampleSize] = useState(100);
   const [power, setPower] = useState(0.8);
   const [sigLevel, setSigLevel] = useState(0.05);
+  const [testType, setTestType] = useState('ttest');
+  const [groups, setGroups] = useState(3);
+  const [df, setDf] = useState(1);
   const [result, setResult] = useState(null);
   const exportRef = useRef(null);
 
+  const extraParams = useMemo(() => {
+    if (testType === 'anova') return { k: groups };
+    if (testType === 'chisq') return { df };
+    return {};
+  }, [testType, groups, df]);
+
   const handleCalculate = () => {
-    const n = pwrTTest({ d: effectSize, power, sigLevel, type: testType });
-    setResult({
-      n,
-      total: testType === 'two.sample' ? n * 2 : n,
-      testType,
-      effectSize,
+    const mde = minimumDetectableEffect({
+      n: sampleSize,
       power,
       sigLevel,
+      testType,
+      extraParams,
     });
+    setResult({ mde, sampleSize, power, testType });
   };
+
+  // Auto-calculate on mount
+  useEffect(() => {
+    handleCalculate();
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const curveData = useMemo(() => {
     if (!result) return [];
-    return powerCurveData({
-      n: result.n,
-      sigLevel: result.sigLevel,
-      type: result.testType,
-    });
-  }, [result]);
+    const data = [];
+    const maxN = sampleSize * 3;
+    const step = Math.max(1, Math.floor((maxN - 20) / 50));
+    for (let n = 20; n <= maxN; n += step) {
+      const mde = minimumDetectableEffect({
+        n,
+        power,
+        sigLevel,
+        testType,
+        extraParams,
+      });
+      data.push({ n, mde });
+    }
+    return data;
+  }, [result, sampleSize, power, sigLevel, testType, extraParams]);
 
   const testLabel = TEST_TYPES.find(t => t.value === testType)?.label;
 
   return (
     <>
       <div className="page-header">
-        <h1 className="page-title">T-Test Sample Size Calculator</h1>
-        <p className="page-subtitle">Determine the required sample size for your t-test design</p>
+        <h1 className="page-title">Minimum Detectable Effect</h1>
+        <p className="page-subtitle">Find the smallest effect your study can detect</p>
       </div>
       <div className="page-body">
         <div className="two-col-layout">
-          {/* Controls */}
           <div className="card">
             <div className="card-header">
               <h2 className="card-title">Parameters</h2>
@@ -69,18 +90,19 @@ export default function Calculator() {
               </div>
 
               <Slider
-                label="Effect Size"
-                sublabel="Cohen's d"
-                value={effectSize}
-                onChange={setEffectSize}
-                min={0.1}
-                max={2.0}
-                step={0.05}
+                label="Sample Size"
+                sublabel="n"
+                value={sampleSize}
+                onChange={setSampleSize}
+                min={10}
+                max={1000}
+                step={5}
+                format={v => Math.round(v)}
               />
 
               <Slider
                 label="Power"
-                sublabel="1 - β"
+                sublabel="1 - \u03b2"
                 value={power}
                 onChange={setPower}
                 min={0.5}
@@ -90,7 +112,7 @@ export default function Calculator() {
 
               <Slider
                 label="Significance Level"
-                sublabel="α"
+                sublabel="\u03b1"
                 value={sigLevel}
                 onChange={setSigLevel}
                 min={0.01}
@@ -98,60 +120,74 @@ export default function Calculator() {
                 step={0.01}
               />
 
+              {testType === 'anova' && (
+                <Slider
+                  label="Groups"
+                  sublabel="k"
+                  value={groups}
+                  onChange={setGroups}
+                  min={2}
+                  max={10}
+                  step={1}
+                  format={v => Math.round(v)}
+                />
+              )}
+
+              {testType === 'chisq' && (
+                <Slider
+                  label="Degrees of Freedom"
+                  sublabel="df"
+                  value={df}
+                  onChange={setDf}
+                  min={1}
+                  max={10}
+                  step={1}
+                  format={v => Math.round(v)}
+                />
+              )}
+
               <button className="btn btn-primary btn-block" onClick={handleCalculate}>
-                Calculate Sample Size
+                Calculate MDE
               </button>
             </div>
           </div>
 
-          {/* Results */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
             {result ? (
               <div className="animate-in" ref={exportRef}>
-                {/* Result summary */}
+                {/* Big number result */}
                 <div className="result-grid" style={{ marginBottom: 24 }}>
                   <div className="result-card">
-                    <div className="result-label">Per Group</div>
-                    <div className="result-value">{result.n}</div>
-                    <div className="result-detail">participants needed</div>
+                    <div className="result-label">Minimum Detectable Effect</div>
+                    <div className="result-value" style={{ color: '#0ea5e9' }}>{result.mde}</div>
+                    <div className="result-detail">smallest detectable effect size</div>
                   </div>
-                  {result.testType === 'two.sample' && (
-                    <div className="result-card">
-                      <div className="result-label">Total</div>
-                      <div className="result-value">{result.total}</div>
-                      <div className="result-detail">across both groups</div>
-                    </div>
-                  )}
                 </div>
 
                 {/* Parameters summary */}
                 <div className="result-grid" style={{ marginBottom: 24 }}>
                   <div className="stat-card">
-                    <div className="stat-value">{testLabel}</div>
-                    <div className="stat-label">Test Type</div>
-                  </div>
-                  <div className="stat-card">
-                    <div className="stat-value">{result.effectSize}</div>
-                    <div className="stat-label">Effect Size (d)</div>
+                    <div className="stat-value">{result.sampleSize}</div>
+                    <div className="stat-label">Sample Size (n)</div>
                   </div>
                   <div className="stat-card">
                     <div className="stat-value">{result.power}</div>
                     <div className="stat-label">Power</div>
                   </div>
                   <div className="stat-card">
-                    <div className="stat-value">{result.sigLevel}</div>
-                    <div className="stat-label">Sig. Level (α)</div>
+                    <div className="stat-value">{testLabel}</div>
+                    <div className="stat-label">Test Type</div>
                   </div>
                 </div>
 
-                {/* Power curve */}
+                {/* MDE curve */}
                 <div className="card">
                   <div className="card-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                     <div>
-                      <h2 className="card-title">Power Curve</h2>
-                      <p className="card-subtitle">Power as a function of effect size at n = {result.n}</p>
+                      <h2 className="card-title">MDE vs. Sample Size</h2>
+                      <p className="card-subtitle">Minimum detectable effect decreases as sample size grows</p>
                     </div>
-                    <ExportButton targetRef={exportRef} filename="ttest-power-analysis" />
+                    <ExportButton targetRef={exportRef} filename="min-detectable-effect" />
                   </div>
                   <div className="card-body">
                     <div className="chart-container" style={{ position: 'relative' }}>
@@ -159,29 +195,27 @@ export default function Calculator() {
                         <LineChart data={curveData} margin={{ top: 5, right: 30, left: 10, bottom: 5 }}>
                           <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f2" />
                           <XAxis
-                            dataKey="d"
-                            label={{ value: "Effect Size (Cohen's d)", position: 'insideBottom', offset: -5, style: { fontSize: 12, fill: '#a1a1aa' } }}
+                            dataKey="n"
                             tick={{ fontSize: 11, fill: '#a1a1aa' }}
+                            label={{ value: 'Sample Size (n)', position: 'insideBottom', offset: -5, style: { fontSize: 12, fill: '#a1a1aa' } }}
                           />
                           <YAxis
-                            domain={[0, 1]}
-                            label={{ value: 'Power', angle: -90, position: 'insideLeft', offset: 10, style: { fontSize: 12, fill: '#a1a1aa' } }}
                             tick={{ fontSize: 11, fill: '#a1a1aa' }}
+                            label={{ value: 'Min. Detectable Effect', angle: -90, position: 'insideLeft', offset: 10, style: { fontSize: 12, fill: '#a1a1aa' } }}
                           />
                           <Tooltip
                             contentStyle={{ borderRadius: 8, border: '1px solid #e4e4e7', fontSize: 13 }}
-                            formatter={(v) => [v.toFixed(4), 'Power']}
-                            labelFormatter={(v) => `d = ${v}`}
+                            formatter={(v) => [v.toFixed(4), 'MDE']}
+                            labelFormatter={(v) => `n = ${v}`}
                           />
-                          <ReferenceLine y={result.power} stroke="#a1a1aa" strokeDasharray="5 5" label={{ value: `Target: ${result.power}`, position: 'right', fontSize: 11, fill: '#a1a1aa' }} />
-                          <ReferenceLine x={result.effectSize} stroke="#a1a1aa" strokeDasharray="5 5" />
+                          <ReferenceLine x={sampleSize} stroke="#a1a1aa" strokeDasharray="5 5" label={{ value: `n = ${sampleSize}`, position: 'top', fontSize: 11, fill: '#a1a1aa' }} />
                           <Line
                             type="monotone"
-                            dataKey="power"
-                            stroke="#2563eb"
+                            dataKey="mde"
+                            stroke="#0ea5e9"
                             strokeWidth={2.5}
                             dot={false}
-                            activeDot={{ r: 5, fill: '#2563eb' }}
+                            activeDot={{ r: 5, fill: '#0ea5e9' }}
                           />
                         </LineChart>
                       </ResponsiveContainer>

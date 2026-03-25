@@ -1,4 +1,3 @@
-import ChartWatermark from '../components/ChartWatermark';
 import { useState, useRef, useMemo } from 'react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Area, ComposedChart } from 'recharts';
 import Slider from '../components/Slider';
@@ -66,27 +65,30 @@ export default function CIExplorer() {
                 <ExportButton targetRef={exportRef} filename="ci-width-explorer" />
               </div>
               <div className="card-body">
-                <div className="chart-container-tall"><ChartWatermark />
+                <div className="chart-container-tall" style={{ position: 'relative' }}>
                   <ResponsiveContainer width="100%" height="100%">
                     <LineChart data={data} margin={{ top: 5, right: 30, left: 10, bottom: 5 }}>
-                      <CartesianGrid strokeDasharray="3 3" stroke="var(--border-light)" />
+                      <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f2" />
                       <XAxis
                         dataKey="n"
-                        tick={{ fontSize: 11, fill: 'var(--text-tertiary)' }}
-                        label={{ value: 'Sample Size (n)', position: 'insideBottom', offset: -5, style: { fontSize: 12, fill: 'var(--text-tertiary)' } }}
+                        tick={{ fontSize: 11, fill: '#a1a1aa' }}
+                        label={{ value: 'Sample Size (n)', position: 'insideBottom', offset: -5, style: { fontSize: 12, fill: '#a1a1aa' } }}
                       />
                       <YAxis
-                        tick={{ fontSize: 11, fill: 'var(--text-tertiary)' }}
-                        label={{ value: 'CI Width', angle: -90, position: 'insideLeft', offset: 10, style: { fontSize: 12, fill: 'var(--text-tertiary)' } }}
+                        tick={{ fontSize: 11, fill: '#a1a1aa' }}
+                        label={{ value: 'CI Width', angle: -90, position: 'insideLeft', offset: 10, style: { fontSize: 12, fill: '#a1a1aa' } }}
                       />
                       <Tooltip
-                        contentStyle={{ borderRadius: 8, border: '1px solid var(--border)', fontSize: 13, background: 'var(--bg-secondary)', color: 'var(--text-primary)' }} cursor={{ strokeDasharray: '3 3' }}
+                        contentStyle={{ borderRadius: 8, border: '1px solid #e4e4e7', fontSize: 13 }}
                         formatter={(v, name) => [v, name === 'width' ? 'CI Width' : name]}
                         labelFormatter={(v) => `n = ${v}`}
                       />
-                      <Line type="monotone" dataKey="width" stroke="#2563eb" strokeWidth={2.5} dot={false} activeDot={{ r: 7, fill: '#2563eb', stroke: 'var(--bg-secondary)', strokeWidth: 2 }} />
+                      <Line type="monotone" dataKey="width" stroke="#2563eb" strokeWidth={2.5} dot={false} activeDot={{ r: 5, fill: '#2563eb' }} />
                     </LineChart>
                   </ResponsiveContainer>
+                  <div style={{ position: 'absolute', bottom: 12, right: 16, opacity: 0.12, pointerEvents: 'none' }}>
+                    <img src={import.meta.env.BASE_URL + 'analytica-logo.png'} alt="" style={{ height: 22 }} />
+                  </div>
                 </div>
               </div>
             </div>
@@ -98,19 +100,22 @@ export default function CIExplorer() {
                 <p className="card-subtitle">Upper and lower bounds as sample size increases</p>
               </div>
               <div className="card-body">
-                <div className="chart-container"><ChartWatermark />
+                <div className="chart-container" style={{ position: 'relative' }}>
                   <ResponsiveContainer width="100%" height="100%">
                     <ComposedChart data={data} margin={{ top: 5, right: 30, left: 10, bottom: 5 }}>
-                      <CartesianGrid strokeDasharray="3 3" stroke="var(--border-light)" />
-                      <XAxis dataKey="n" tick={{ fontSize: 11, fill: 'var(--text-tertiary)' }} label={{ value: 'Sample Size (n)', position: 'insideBottom', offset: -5, style: { fontSize: 12, fill: 'var(--text-tertiary)' } }} />
-                      <YAxis tick={{ fontSize: 11, fill: 'var(--text-tertiary)' }} domain={['auto', 'auto']} />
-                      <Tooltip contentStyle={{ borderRadius: 8, border: '1px solid var(--border)', fontSize: 13, background: 'var(--bg-secondary)', color: 'var(--text-primary)' }} cursor={{ strokeDasharray: '3 3' }} labelFormatter={(v) => `n = ${v}`} />
+                      <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f2" />
+                      <XAxis dataKey="n" tick={{ fontSize: 11, fill: '#a1a1aa' }} label={{ value: 'Sample Size (n)', position: 'insideBottom', offset: -5, style: { fontSize: 12, fill: '#a1a1aa' } }} />
+                      <YAxis tick={{ fontSize: 11, fill: '#a1a1aa' }} domain={['auto', 'auto']} />
+                      <Tooltip contentStyle={{ borderRadius: 8, border: '1px solid #e4e4e7', fontSize: 13 }} labelFormatter={(v) => `n = ${v}`} />
                       <Area type="monotone" dataKey="upper" stroke="none" fill="#dbeafe" fillOpacity={0.5} name="Upper Bound" />
                       <Area type="monotone" dataKey="lower" stroke="none" fill="#dbeafe" fillOpacity={0.5} name="Lower Bound" />
                       <Line type="monotone" dataKey="upper" stroke="#2563eb" strokeWidth={1.5} dot={false} name="Upper" />
                       <Line type="monotone" dataKey="lower" stroke="#7c3aed" strokeWidth={1.5} dot={false} name="Lower" />
                     </ComposedChart>
                   </ResponsiveContainer>
+                  <div style={{ position: 'absolute', bottom: 12, right: 16, opacity: 0.12, pointerEvents: 'none' }}>
+                    <img src={import.meta.env.BASE_URL + 'analytica-logo.png'} alt="" style={{ height: 22 }} />
+                  </div>
                 </div>
               </div>
             </div>

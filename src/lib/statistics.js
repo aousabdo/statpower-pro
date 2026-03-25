@@ -370,3 +370,646 @@ export function ciWidthData({ mean, sd, confLevel, nRange = [10, 500] }) {
 
   return data;
 }
+
+// ─── Power analysis: Correlation (r-test) ───────────────────────────────────
+
+/**
+ * Calculate sample size for correlation test.
+ * Uses Fisher z-transform.
+ * @param {number} r - Expected correlation
+ * @param {number} power - Desired power (0-1)
+ * @param {number} sigLevel - Significance level
+ * @returns {number} Required n
+ */
+export function pwrRTest({ r, power, sigLevel }) {
+  const zAlpha = normalQuantile(1 - sigLevel / 2);
+  const zBeta = normalQuantile(power);
+  const z = Math.atanh(r); // Fisher z-transform
+  // Initial estimate
+  let n0 = Math.ceil(((zAlpha + zBeta) / z) ** 2 + 3);
+  // Binary search for exact n
+  let lo = 4;
+  let hi = Math.max(n0 * 4, 1e5);
+  for (let i = 0; i < 100; i++) {
+    const mid = Math.floor((lo + hi) / 2);
+    const p = correlationPower({ n: mid, r, sigLevel });
+    if (Math.abs(p - power) < 1e-6) return mid;
+    if (p < power) lo = mid + 1;
+    else hi = mid;
+  }
+  return Math.ceil(hi);
+}
+
+/**
+ * Calculate power for correlation test using Fisher z-transform.
+ */
+export function correlationPower({ n, r, sigLevel }) {
+  if (n <= 3) return 0;
+  const z = Math.atanh(r);
+  const se = 1 / Math.sqrt(n - 3);
+  const zAlpha = normalQuantile(1 - sigLevel / 2);
+  const power = 1 - normalCdf(zAlpha - z / se) + normalCdf(-zAlpha - z / se);
+  return Math.min(1, Math.max(0, power));
+}
+
+/**
+ * Generate correlation power curve data.
+ */
+export function correlationPowerCurve({ r, sigLevel, nRange = [10, 300], steps = 40 }) {
+  const data = [];
+  const step = Math.max(1, Math.floor((nRange[1] - nRange[0]) / steps));
+  for (let n = nRange[0]; n <= nRange[1]; n += step) {
+    const power = correlationPower({ n, r, sigLevel });
+    data.push({ n, power: Math.round(power * 10000) / 10000 });
+  }
+  return data;
+}
+
+// ─── Power analysis: Regression ─────────────────────────────────────────────
+
+/**
+ * Calculate sample size for regression F-test.
+ * @param {number} f2 - Cohen's f² = R²/(1-R²)
+ * @param {number} u - Number of predictors
+ * @param {number} power - Desired power (0-1)
+ * @param {number} sigLevel - Significance level
+ * @returns {number} Required total n
+ */
+export function pwrRegression({ f2, u, power, sigLevel }) {
+  let lo = u + 2;
+  let hi = 1e5;
+  for (let i = 0; i < 100; i++) {
+    const mid = Math.floor((lo + hi) / 2);
+    const p = regressionPower({ n: mid, f2, u, sigLevel });
+    if (Math.abs(p - power) < 1e-6) return mid;
+    if (p < power) lo = mid + 1;
+    else hi = mid;
+  }
+  return Math.ceil(hi);
+}
+
+/**
+ * Calculate power for regression F-test.
+ * Uses Patnaik approximation for non-central F.
+ */
+export function regressionPower({ n, f2, u, sigLevel }) {
+  const df1 = u;
+  const df2 = n - u - 1;
+  if (df2 < 1) return 0;
+  const lambda = f2 * n;
+  const fCrit = fQuantile(1 - sigLevel, df1, df2);
+
+  // Patnaik approximation
+  const df1p = (df1 + lambda) * (df1 + lambda) / (df1 + 2 * lambda);
+  const adjustedCrit = fCrit * df1 / (df1 + lambda);
+  const bArg = df1p * adjustedCrit / (df1p * adjustedCrit + df2);
+  const cdfVal = jStat.ibeta(bArg, df1p / 2, df2 / 2);
+  return Math.min(1, Math.max(0, 1 - cdfVal));
+}
+
+/**
+ * Generate regression power curve data.
+ */
+export function regressionPowerCurve({ f2, u, sigLevel, nRange = [10, 300], steps = 40 }) {
+  const data = [];
+  const step = Math.max(1, Math.floor((nRange[1] - nRange[0]) / steps));
+  for (let n = Math.max(nRange[0], u + 2); n <= nRange[1]; n += step) {
+    const power = regressionPower({ n, f2, u, sigLevel });
+    data.push({ n, power: Math.round(power * 10000) / 10000 });
+  }
+  return data;
+}
+
+// ─── Power analysis: Two Proportions ────────────────────────────────────────
+
+/**
+ * Calculate sample size for two-proportions z-test.
+ * @param {number} p1 - Proportion in group 1
+ * @param {number} p2 - Proportion in group 2
+ * @param {number} power - Desired power (0-1)
+ * @param {number} sigLevel - Significance level
+ * @param {number} ratio - n2/n1 allocation ratio (default 1)
+ * @returns {number} n1 (sample size for group 1)
+ */
+export function pwrTwoProportions({ p1, p2, power, sigLevel, ratio = 1 }) {
+  const zAlpha = normalQuantile(1 - sigLevel / 2);
+  const zBeta = normalQuantile(power);
+  const pbar = (p1 + p2 * ratio) / (1 + ratio);
+  const num = zAlpha * Math.sqrt(pbar * (1 - pbar) * (1 + 1 / ratio)) +
+              zBeta * Math.sqrt(p1 * (1 - p1) + p2 * (1 - p2) / ratio);
+  const n1 = Math.ceil((num / (p1 - p2)) ** 2);
+  return Math.max(n1, 2);
+}
+
+/**
+ * Calculate power for two-proportions z-test.
+ */
+export function twoProportionsPower({ n1, p1, p2, sigLevel, ratio = 1 }) {
+  const n2 = Math.round(n1 * ratio);
+  const pbar = (p1 * n1 + p2 * n2) / (n1 + n2);
+  const se0 = Math.sqrt(pbar * (1 - pbar) * (1 / n1 + 1 / n2));
+  const se1 = Math.sqrt(p1 * (1 - p1) / n1 + p2 * (1 - p2) / n2);
+  const zAlpha = normalQuantile(1 - sigLevel / 2);
+  const z = (Math.abs(p1 - p2) - zAlpha * se0) / se1;
+  return Math.min(1, Math.max(0, normalCdf(z)));
+}
+
+/**
+ * Generate two-proportions power curve data.
+ */
+export function twoProportionsPowerCurve({ p1, p2, sigLevel, nRange = [10, 500], steps = 40, ratio = 1 }) {
+  const data = [];
+  const step = Math.max(1, Math.floor((nRange[1] - nRange[0]) / steps));
+  for (let n1 = nRange[0]; n1 <= nRange[1]; n1 += step) {
+    const power = twoProportionsPower({ n1, p1, p2, sigLevel, ratio });
+    data.push({ n: n1, power: Math.round(power * 10000) / 10000 });
+  }
+  return data;
+}
+
+// ─── Power analysis: Equivalence (TOST) ─────────────────────────────────────
+
+/**
+ * Calculate sample size for TOST equivalence test.
+ * @param {number} delta - True difference (0 for perfect equivalence)
+ * @param {number} sd - Standard deviation
+ * @param {number} power - Desired power (0-1)
+ * @param {number} sigLevel - Significance level (one-sided, typically 0.05)
+ * @param {number} margin - Equivalence margin
+ * @returns {number} Required n per group
+ */
+export function pwrTOST({ delta, sd, power, sigLevel, margin }) {
+  let lo = 2;
+  let hi = 1e5;
+  for (let i = 0; i < 100; i++) {
+    const mid = Math.floor((lo + hi) / 2);
+    const p = tostPower({ n: mid, delta, sd, sigLevel, margin });
+    if (Math.abs(p - power) < 1e-6) return mid;
+    if (p < power) lo = mid + 1;
+    else hi = mid;
+  }
+  return Math.ceil(hi);
+}
+
+/**
+ * Calculate power for TOST equivalence test.
+ * Power = P(reject both one-sided tests).
+ */
+export function tostPower({ n, delta, sd, sigLevel, margin }) {
+  const se = sd * Math.sqrt(2 / n);
+  const df = 2 * n - 2;
+  const tCrit = tQuantile(1 - sigLevel, df);
+  // Power = P(T1 > tCrit) * P(T2 > tCrit) approximately
+  // where T1 tests H0: diff <= -margin, T2 tests H0: diff >= margin
+  // More precisely: power = P(lower bound > -margin AND upper bound < margin)
+  const ncp1 = (delta + margin) / se;
+  const ncp2 = (delta - margin) / se;
+  const power1 = 1 - nctCdf(tCrit, df, ncp1);
+  const power2 = nctCdf(-tCrit, df, ncp2);
+  // Power is the probability that both tests reject
+  // Approximation: power ≈ power1 + power2 - 1 when both are high
+  const pwr = power1 + power2 - 1;
+  return Math.min(1, Math.max(0, pwr));
+}
+
+/**
+ * Generate TOST power curve data.
+ */
+export function tostPowerCurve({ delta, sd, sigLevel, margin, nRange = [10, 500], steps = 40 }) {
+  const data = [];
+  const step = Math.max(1, Math.floor((nRange[1] - nRange[0]) / steps));
+  for (let n = nRange[0]; n <= nRange[1]; n += step) {
+    const power = tostPower({ n, delta, sd, sigLevel, margin });
+    data.push({ n, power: Math.round(power * 10000) / 10000 });
+  }
+  return data;
+}
+
+// ─── Sample Size Table ──────────────────────────────────────────────────────
+
+/**
+ * Generate a 2D sample size table: rows = effect sizes, cols = power levels.
+ * @param {number[]} effectSizes - Array of effect sizes
+ * @param {number[]} powers - Array of power levels
+ * @param {number} sigLevel - Significance level
+ * @param {string} testType - 'ttest', 'anova', 'chisq', 'correlation', 'regression'
+ * @param {Object} extraParams - Additional params (k for anova, df for chisq, u for regression)
+ * @returns {{ effectSizes, powers, table: Array<Array<number>> }}
+ */
+export function sampleSizeTable({ effectSizes, powers, sigLevel, testType, extraParams = {} }) {
+  const table = [];
+  for (const es of effectSizes) {
+    const row = [];
+    for (const pwr of powers) {
+      let n;
+      switch (testType) {
+        case 'ttest':
+          n = pwrTTest({ d: es, power: pwr, sigLevel, type: extraParams.type || 'two.sample' });
+          break;
+        case 'anova':
+          n = pwrAnovaTest({ k: extraParams.k || 3, f: es, power: pwr, sigLevel });
+          break;
+        case 'chisq':
+          n = pwrChisqTest({ w: es, df: extraParams.df || 1, power: pwr, sigLevel });
+          break;
+        case 'correlation':
+          n = pwrRTest({ r: es, power: pwr, sigLevel });
+          break;
+        case 'regression':
+          n = pwrRegression({ f2: es, u: extraParams.u || 2, power: pwr, sigLevel });
+          break;
+        default:
+          n = pwrTTest({ d: es, power: pwr, sigLevel });
+      }
+      row.push(n);
+    }
+    table.push(row);
+  }
+  return { effectSizes, powers, table };
+}
+
+// ─── Minimum Detectable Effect ──────────────────────────────────────────────
+
+/**
+ * Find the smallest effect size detectable at given n and power.
+ * Uses binary search.
+ * @param {number} n - Sample size
+ * @param {number} power - Target power
+ * @param {number} sigLevel - Significance level
+ * @param {string} testType - 'ttest', 'anova', 'chisq', 'correlation', 'regression'
+ * @param {Object} extraParams - Additional params (k, df, u)
+ * @returns {number} Minimum detectable effect size
+ */
+export function minimumDetectableEffect({ n, power, sigLevel, testType, extraParams = {} }) {
+  let lo = 0.001;
+  let hi = 5.0;
+
+  const computePower = (es) => {
+    switch (testType) {
+      case 'ttest':
+        return tTestPower({ n, d: es, sigLevel, type: extraParams.type || 'two.sample' });
+      case 'anova':
+        return anovaPower({ n, k: extraParams.k || 3, f: es, sigLevel });
+      case 'chisq':
+        return chisqPower({ N: n, w: es, df: extraParams.df || 1, sigLevel });
+      case 'correlation':
+        return correlationPower({ n, r: Math.min(es, 0.999), sigLevel });
+      case 'regression':
+        return regressionPower({ n, f2: es, u: extraParams.u || 2, sigLevel });
+      default:
+        return tTestPower({ n, d: es, sigLevel });
+    }
+  };
+
+  for (let i = 0; i < 100; i++) {
+    const mid = (lo + hi) / 2;
+    const p = computePower(mid);
+    if (Math.abs(p - power) < 1e-4) return Math.round(mid * 10000) / 10000;
+    if (p < power) lo = mid;
+    else hi = mid;
+  }
+  return Math.round(hi * 10000) / 10000;
+}
+
+// ─── Effect Size Converter ──────────────────────────────────────────────────
+
+/**
+ * Convert between effect size measures.
+ * Supported: 'd' (Cohen's d), 'r' (correlation), 'eta2' (eta-squared),
+ * 'f' (Cohen's f), 'or' (odds ratio), 'f2' (f-squared), 'w' (Cohen's w)
+ */
+export function convertEffectSize(value, from, to) {
+  if (from === to) return value;
+
+  // First convert to Cohen's d as intermediate
+  let d;
+  switch (from) {
+    case 'd': d = value; break;
+    case 'r': d = 2 * value / Math.sqrt(1 - value * value); break;
+    case 'eta2': {
+      const fVal = Math.sqrt(value / (1 - value));
+      d = 2 * fVal;
+      break;
+    }
+    case 'f': d = 2 * value; break;
+    case 'or': d = Math.log(value) * Math.sqrt(3) / Math.PI; break;
+    case 'f2': d = 2 * Math.sqrt(value); break;
+    case 'w': {
+      // w ≈ sqrt(eta2), eta2 = w², f = w/sqrt(1-w²), d = 2f
+      const eta2 = value * value;
+      const fVal2 = Math.sqrt(eta2 / Math.max(1e-10, 1 - eta2));
+      d = 2 * fVal2;
+      break;
+    }
+    default: d = value;
+  }
+
+  // Then convert from d to target
+  switch (to) {
+    case 'd': return Math.round(d * 10000) / 10000;
+    case 'r': return Math.round((d / Math.sqrt(d * d + 4)) * 10000) / 10000;
+    case 'eta2': {
+      const f = d / 2;
+      return Math.round((f * f / (1 + f * f)) * 10000) / 10000;
+    }
+    case 'f': return Math.round((d / 2) * 10000) / 10000;
+    case 'or': return Math.round(Math.exp(d * Math.PI / Math.sqrt(3)) * 10000) / 10000;
+    case 'f2': return Math.round(((d / 2) ** 2) * 10000) / 10000;
+    case 'w': {
+      const f = d / 2;
+      const eta2 = f * f / (1 + f * f);
+      return Math.round(Math.sqrt(eta2) * 10000) / 10000;
+    }
+    default: return d;
+  }
+}
+
+// ─── Effect Size Benchmarks ─────────────────────────────────────────────────
+
+/**
+ * Classify an effect size and return benchmarks + context.
+ * @param {number} value - The effect size value
+ * @param {string} type - 'd', 'r', 'f', 'w', 'eta2', 'f2'
+ * @returns {{ label, benchmarks, overlapPercent, percentile }}
+ */
+export function effectSizeBenchmarks(value, type) {
+  const benchmarkDefs = {
+    d:    { small: 0.2, medium: 0.5, large: 0.8 },
+    r:    { small: 0.1, medium: 0.3, large: 0.5 },
+    f:    { small: 0.1, medium: 0.25, large: 0.4 },
+    w:    { small: 0.1, medium: 0.3, large: 0.5 },
+    eta2: { small: 0.01, medium: 0.06, large: 0.14 },
+    f2:   { small: 0.02, medium: 0.15, large: 0.35 },
+  };
+
+  const benchmarks = benchmarkDefs[type] || benchmarkDefs.d;
+  const absVal = Math.abs(value);
+
+  let label;
+  if (absVal < benchmarks.small) label = 'negligible';
+  else if (absVal < benchmarks.medium) label = 'small';
+  else if (absVal < benchmarks.large) label = 'medium';
+  else label = 'large';
+
+  // Overlap percent: for d, the % overlap between two normal distributions
+  // OVL = 2 * Phi(-|d|/2)
+  let overlapPercent = null;
+  if (type === 'd') {
+    overlapPercent = Math.round(2 * normalCdf(-absVal / 2) * 10000) / 100;
+  }
+
+  // Percentile: for d, the percentile of the alternative distribution
+  // at the mean of the null distribution = Phi(-d)
+  let percentile = null;
+  if (type === 'd') {
+    percentile = Math.round(normalCdf(-absVal) * 10000) / 100;
+  }
+
+  return { label, benchmarks, overlapPercent, percentile };
+}
+
+// ─── Distribution Overlap Data ──────────────────────────────────────────────
+
+/**
+ * Generate two normal curves for visual overlap display.
+ * @param {number} d - Cohen's d (separation between means)
+ * @param {number} steps - Number of data points
+ * @returns {Array<{x, null, alt}>}
+ */
+export function distributionOverlap({ d, steps = 200 }) {
+  const data = [];
+  const xMin = Math.min(0, d) - 4;
+  const xMax = Math.max(0, d) + 4;
+  const dx = (xMax - xMin) / steps;
+
+  for (let i = 0; i <= steps; i++) {
+    const x = xMin + i * dx;
+    data.push({
+      x: Math.round(x * 1000) / 1000,
+      null: Math.round(jStat.normal.pdf(x, 0, 1) * 10000) / 10000,
+      alt: Math.round(jStat.normal.pdf(x, d, 1) * 10000) / 10000,
+    });
+  }
+  return data;
+}
+
+// ─── Bayesian Sample Size ───────────────────────────────────────────────────
+
+/**
+ * Calculate sample size to achieve a target Bayes Factor.
+ * Uses simplified JZS Bayes factor approximation.
+ * @param {number} d - Expected Cohen's d
+ * @param {number} bf - Target Bayes Factor (e.g., 3 or 10)
+ * @param {number} prior - Cauchy prior width (default 0.707)
+ * @param {number} sigLevel - Not used directly, included for API consistency
+ * @returns {number} Required n per group
+ */
+export function bayesianSampleSize({ d, bf, prior = 0.707, sigLevel = 0.05 }) {
+  // Simplified JZS BF10 ≈ sqrt((n+1)/n) * exp(n*d²/(2*(n+1)))
+  // adjusted for prior: scale by 1/sqrt(1 + n*prior²)
+  const computeBF = (n) => {
+    const bf10 = Math.sqrt((n + 1) / n) *
+                 (1 / Math.sqrt(1 + n * prior * prior)) *
+                 Math.exp(n * d * d / (2 * (1 + 1 / (n * prior * prior))));
+    return bf10;
+  };
+
+  let lo = 2;
+  let hi = 1e5;
+  for (let i = 0; i < 100; i++) {
+    const mid = Math.floor((lo + hi) / 2);
+    const currentBF = computeBF(mid);
+    if (Math.abs(currentBF - bf) / bf < 0.01) return mid;
+    if (currentBF < bf) lo = mid + 1;
+    else hi = mid;
+  }
+  return Math.ceil(hi);
+}
+
+/**
+ * Generate Bayes Factor curve across sample sizes.
+ */
+export function bayesianBFCurve({ d, prior = 0.707, nRange = [5, 300], steps = 40 }) {
+  const data = [];
+  const step = Math.max(1, Math.floor((nRange[1] - nRange[0]) / steps));
+  for (let n = nRange[0]; n <= nRange[1]; n += step) {
+    const bf10 = Math.sqrt((n + 1) / n) *
+                 (1 / Math.sqrt(1 + n * prior * prior)) *
+                 Math.exp(n * d * d / (2 * (1 + 1 / (n * prior * prior))));
+    data.push({ n, bf10: Math.round(bf10 * 1000) / 1000 });
+  }
+  return data;
+}
+
+// ─── P-value Distribution ───────────────────────────────────────────────────
+
+/**
+ * Generate theoretical p-value density curves under H0 and H1.
+ * @param {number} effectSize - Cohen's d under H1
+ * @param {number} n - Sample size per group
+ * @param {number} sigLevel - Alpha level
+ * @param {number} nSim - Not used (theoretical curves), kept for API compat
+ * @returns {{ h0, h1, powerArea }}
+ */
+export function pvalueDistribution({ effectSize, n, sigLevel, nSim = 1000 }) {
+  const steps = 100;
+  const h0 = [];
+  const h1 = [];
+  const df = 2 * n - 2;
+  const ncp = effectSize * Math.sqrt(n / 2);
+
+  for (let i = 1; i <= steps; i++) {
+    const p = i / steps;
+    // Under H0: p-values are uniform -> density = 1
+    h0.push({ x: Math.round(p * 100) / 100, density: 1 });
+
+    // Under H1: density of p-values from non-central t
+    const dp = 0.005;
+    const p1 = Math.max(0.001, p - dp);
+    const p2 = Math.min(0.999, p + dp);
+    const t1 = tQuantile(1 - p1 / 2, df);
+    const t2 = tQuantile(1 - p2 / 2, df);
+    const cdf1 = 1 - nctCdf(t1, df, ncp) + nctCdf(-t1, df, ncp);
+    const cdf2 = 1 - nctCdf(t2, df, ncp) + nctCdf(-t2, df, ncp);
+    const density = Math.max(0, (cdf1 - cdf2) / (p2 - p1));
+    h1.push({ x: Math.round(p * 100) / 100, density: Math.round(density * 10000) / 10000 });
+  }
+
+  const power = tTestPower({ n, d: effectSize, sigLevel, type: 'two.sample' });
+  return { h0, h1, powerArea: Math.round(power * 10000) / 10000 };
+}
+
+// ─── A/B Test Calculator ────────────────────────────────────────────────────
+
+/**
+ * Calculate sample size for A/B test.
+ * @param {number} baseline - Baseline conversion rate (e.g., 0.05)
+ * @param {number} mde - Minimum detectable effect as relative change (e.g., 0.1 for 10% lift)
+ * @param {number} power - Desired power (0-1)
+ * @param {number} sigLevel - Significance level
+ * @param {number} ratio - n2/n1 allocation ratio (default 1)
+ * @returns {{ n1, n2, totalN }}
+ */
+export function abTestSampleSize({ baseline, mde, power, sigLevel, ratio = 1 }) {
+  const p1 = baseline;
+  const p2 = baseline * (1 + mde);
+  const n1 = pwrTwoProportions({ p1, p2, power, sigLevel, ratio });
+  const n2 = Math.ceil(n1 * ratio);
+  return { n1, n2, totalN: n1 + n2 };
+}
+
+/**
+ * Calculate A/B test duration.
+ * @param {number} baseline - Baseline conversion rate
+ * @param {number} mde - Minimum detectable effect as relative change
+ * @param {number} power - Desired power
+ * @param {number} sigLevel - Significance level
+ * @param {number} dailyVisitors - Daily unique visitors
+ * @param {number} ratio - Allocation ratio (default 1)
+ * @returns {{ n1, n2, totalN, days }}
+ */
+export function abTestDuration({ baseline, mde, power, sigLevel, dailyVisitors, ratio = 1 }) {
+  const { n1, n2, totalN } = abTestSampleSize({ baseline, mde, power, sigLevel, ratio });
+  const days = Math.ceil(totalN / dailyVisitors);
+  return { n1, n2, totalN, days };
+}
+
+// ─── Survey Sample Size ─────────────────────────────────────────────────────
+
+/**
+ * Calculate survey sample size using Cochran's formula with FPC.
+ * @param {number} population - Total population size (Infinity for infinite)
+ * @param {number} marginOfError - Desired margin of error (e.g., 0.05 for +/-5%)
+ * @param {number} confLevel - Confidence level (e.g., 0.95)
+ * @param {number} proportion - Expected proportion (default 0.5 for max variability)
+ * @returns {number} Required sample size
+ */
+export function surveySampleSize({ population = Infinity, marginOfError, confLevel, proportion = 0.5 }) {
+  const z = normalQuantile(1 - (1 - confLevel) / 2);
+  const p = proportion;
+  const e = marginOfError;
+  const n0 = (z * z * p * (1 - p)) / (e * e);
+
+  if (!isFinite(population)) return Math.ceil(n0);
+  // Finite population correction
+  const n = n0 / (1 + (n0 - 1) / population);
+  return Math.ceil(n);
+}
+
+/**
+ * Generate margin of error curve across sample sizes.
+ */
+export function surveyMoECurve({ population = Infinity, confLevel, proportion = 0.5, nRange = [10, 1000], steps = 50 }) {
+  const data = [];
+  const z = normalQuantile(1 - (1 - confLevel) / 2);
+  const p = proportion;
+  const step = Math.max(1, Math.floor((nRange[1] - nRange[0]) / steps));
+
+  for (let n = nRange[0]; n <= nRange[1]; n += step) {
+    let moe = z * Math.sqrt(p * (1 - p) / n);
+    if (isFinite(population) && n < population) {
+      moe *= Math.sqrt((population - n) / (population - 1));
+    }
+    data.push({ n, marginOfError: Math.round(moe * 10000) / 10000 });
+  }
+  return data;
+}
+
+// ─── Reliability (Cronbach's Alpha) Power ───────────────────────────────────
+
+/**
+ * Calculate sample size for testing Cronbach's alpha.
+ * @param {number} alpha0 - Null hypothesis alpha
+ * @param {number} alpha1 - Expected (alternative) alpha
+ * @param {number} k - Number of items
+ * @param {number} power - Desired power (0-1)
+ * @param {number} sigLevel - Significance level
+ * @returns {number} Required n
+ */
+export function reliabilitySampleSize({ alpha0, alpha1, k, power, sigLevel }) {
+  let lo = 3;
+  let hi = 1e5;
+  for (let i = 0; i < 100; i++) {
+    const mid = Math.floor((lo + hi) / 2);
+    const p = reliabilityPower({ n: mid, alpha0, alpha1, k, sigLevel });
+    if (Math.abs(p - power) < 1e-6) return mid;
+    if (p < power) lo = mid + 1;
+    else hi = mid;
+  }
+  return Math.ceil(hi);
+}
+
+/**
+ * Calculate power for Cronbach's alpha test using F-distribution approach.
+ */
+export function reliabilityPower({ n, alpha0, alpha1, k, sigLevel }) {
+  if (n < 3) return 0;
+  const df1 = n - 1;
+  const df2 = (n - 1) * (k - 1);
+  // Test statistic ratio: (1-alpha0)/(1-alpha1)
+  const fRatio = (1 - alpha0) / (1 - alpha1);
+  const fCritVal = fQuantile(1 - sigLevel, df1, df2);
+  // Non-centrality parameter
+  const lambda = df1 * (fRatio - 1);
+  if (lambda <= 0) return sigLevel; // No power gain
+
+  // Patnaik approximation for non-central F
+  const df1p = (df1 + lambda) * (df1 + lambda) / (df1 + 2 * lambda);
+  const adjustedCrit = fCritVal * df1 / (df1 + lambda);
+  const bArg = df1p * adjustedCrit / (df1p * adjustedCrit + df2);
+  const cdfVal = jStat.ibeta(bArg, df1p / 2, df2 / 2);
+  return Math.min(1, Math.max(0, 1 - cdfVal));
+}
+
+/**
+ * Generate reliability power curve data.
+ */
+export function reliabilityPowerCurve({ alpha0, alpha1, k, sigLevel, nRange = [10, 300], steps = 40 }) {
+  const data = [];
+  const step = Math.max(1, Math.floor((nRange[1] - nRange[0]) / steps));
+  for (let n = nRange[0]; n <= nRange[1]; n += step) {
+    const power = reliabilityPower({ n, alpha0, alpha1, k, sigLevel });
+    data.push({ n, power: Math.round(power * 10000) / 10000 });
+  }
+  return data;
+}

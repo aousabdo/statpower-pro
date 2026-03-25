@@ -1,4 +1,3 @@
-import ChartWatermark from '../components/ChartWatermark';
 import { useState, useRef, useMemo } from 'react';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ReferenceLine } from 'recharts';
 import Slider from '../components/Slider';
@@ -70,25 +69,28 @@ export default function ErrorSimulator() {
                 <ExportButton targetRef={exportRef} filename="error-simulation" />
               </div>
               <div className="card-body">
-                <div className="chart-container-tall"><ChartWatermark />
+                <div className="chart-container-tall" style={{ position: 'relative' }}>
                   <ResponsiveContainer width="100%" height="100%">
                     <AreaChart data={chartData} margin={{ top: 5, right: 30, left: 10, bottom: 5 }}>
-                      <CartesianGrid strokeDasharray="3 3" stroke="var(--border-light)" />
+                      <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f2" />
                       <XAxis
                         dataKey="x"
                         type="number"
                         domain={['dataMin', 'dataMax']}
-                        tick={{ fontSize: 11, fill: 'var(--text-tertiary)' }}
-                        label={{ value: 'Sample Mean', position: 'insideBottom', offset: -5, style: { fontSize: 12, fill: 'var(--text-tertiary)' } }}
+                        tick={{ fontSize: 11, fill: '#a1a1aa' }}
+                        label={{ value: 'Sample Mean', position: 'insideBottom', offset: -5, style: { fontSize: 12, fill: '#a1a1aa' } }}
                       />
-                      <YAxis tick={{ fontSize: 11, fill: 'var(--text-tertiary)' }} label={{ value: 'Density', angle: -90, position: 'insideLeft', offset: 10, style: { fontSize: 12, fill: 'var(--text-tertiary)' } }} />
-                      <Tooltip contentStyle={{ borderRadius: 8, border: '1px solid var(--border)', fontSize: 13, background: 'var(--bg-secondary)', color: 'var(--text-primary)' }} formatter={(v) => v.toFixed(4)} cursor={{ strokeDasharray: '3 3' }} />
+                      <YAxis tick={{ fontSize: 11, fill: '#a1a1aa' }} label={{ value: 'Density', angle: -90, position: 'insideLeft', offset: 10, style: { fontSize: 12, fill: '#a1a1aa' } }} />
+                      <Tooltip contentStyle={{ borderRadius: 8, border: '1px solid #e4e4e7', fontSize: 13 }} formatter={(v) => v.toFixed(4)} />
                       <ReferenceLine x={result.criticalValue} stroke="#dc2626" strokeDasharray="5 5" label={{ value: `+crit = ${result.criticalValue}`, position: 'top', fontSize: 10, fill: '#dc2626' }} />
                       <ReferenceLine x={result.negativeCritical} stroke="#dc2626" strokeDasharray="5 5" label={{ value: `-crit = ${result.negativeCritical}`, position: 'top', fontSize: 10, fill: '#dc2626' }} />
                       <Area type="monotone" dataKey="null" stroke="#6366f1" fill="#6366f1" fillOpacity={0.15} strokeWidth={2} name="Null (H₀)" dot={false} />
                       <Area type="monotone" dataKey="alt" stroke="#f59e0b" fill="#f59e0b" fillOpacity={0.15} strokeWidth={2} name="Alternative (H₁)" dot={false} />
                     </AreaChart>
                   </ResponsiveContainer>
+                  <div style={{ position: 'absolute', bottom: 12, right: 16, opacity: 0.12, pointerEvents: 'none' }}>
+                    <img src={import.meta.env.BASE_URL + 'analytica-logo.png'} alt="" style={{ height: 22 }} />
+                  </div>
                 </div>
               </div>
             </div>
