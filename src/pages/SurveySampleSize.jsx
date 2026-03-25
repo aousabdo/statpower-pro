@@ -1,4 +1,4 @@
-import { useState, useRef, useMemo, useEffect } from 'react';
+import { useState, useRef, useMemo } from 'react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ReferenceLine } from 'recharts';
 import Slider from '../components/Slider';
 import ExportButton from '../components/ExportButton';
@@ -10,22 +10,18 @@ export default function SurveySampleSize() {
   const [marginOfError, setMarginOfError] = useState(0.05);
   const [confLevel, setConfLevel] = useState(0.95);
   const [proportion, setProportion] = useState(0.5);
-  const [result, setResult] = useState(null);
   const exportRef = useRef(null);
 
   const effectivePopulation = infinitePop ? Infinity : population;
 
-  const handleCalculate = () => {
+  const result = useMemo(() => {
     const n = surveySampleSize({ population: effectivePopulation, marginOfError, confLevel, proportion });
-    setResult({ n, population: effectivePopulation, marginOfError, confLevel, proportion });
-  };
-
-  useEffect(() => { handleCalculate(); }, []);
+    return { n, population: effectivePopulation, marginOfError, confLevel, proportion };
+  }, [effectivePopulation, marginOfError, confLevel, proportion]);
 
   const curveData = useMemo(() => {
-    if (!result) return [];
     return surveyMoECurve({ population: result.population, confLevel: result.confLevel, proportion: result.proportion, nRange: [10, Math.max(result.n * 3, 1000)], steps: 50 });
-  }, [result]);
+  }, [result.population, result.confLevel, result.proportion, result.n]);
 
   return (
     <>
@@ -94,77 +90,66 @@ export default function SurveySampleSize() {
                 max={0.9}
                 step={0.05}
               />
-
-              <button className="btn btn-primary btn-block" onClick={handleCalculate}>Calculate</button>
             </div>
           </div>
 
           <div ref={exportRef}>
-            {result ? (
-              <div className="animate-in" style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
-                <div className="result-grid">
-                  <div className="result-card">
-                    <div className="result-label">Required Sample Size</div>
-                    <div className="result-value" style={{ color: '#22c55e' }}>{result.n.toLocaleString()}</div>
-                    <div className="result-detail">survey responses needed</div>
-                  </div>
-                </div>
-
-                <div className="result-grid">
-                  <div className="stat-card">
-                    <div className="stat-value">{isFinite(result.population) ? result.population.toLocaleString() : '∞'}</div>
-                    <div className="stat-label">Population</div>
-                  </div>
-                  <div className="stat-card">
-                    <div className="stat-value">&plusmn;{(result.marginOfError * 100).toFixed(1)}%</div>
-                    <div className="stat-label">Margin of Error</div>
-                  </div>
-                  <div className="stat-card">
-                    <div className="stat-value">{(result.confLevel * 100).toFixed(0)}%</div>
-                    <div className="stat-label">Confidence Level</div>
-                  </div>
-                  <div className="stat-card">
-                    <div className="stat-value">{result.proportion}</div>
-                    <div className="stat-label">Expected Proportion</div>
-                  </div>
-                </div>
-
-                <div className="card">
-                  <div className="card-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <div>
-                      <h2 className="card-title">Margin of Error vs Sample Size</h2>
-                      <p className="card-subtitle">How precision improves as you collect more responses</p>
-                    </div>
-                    <ExportButton targetRef={exportRef} filename="survey-sample-size" />
-                  </div>
-                  <div className="card-body">
-                    <div className="chart-container" style={{ position: 'relative' }}>
-                      <ResponsiveContainer width="100%" height="100%">
-                        <LineChart data={curveData} margin={{ top: 5, right: 30, left: 10, bottom: 5 }}>
-                          <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f2" />
-                          <XAxis dataKey="n" label={{ value: 'Sample Size (n)', position: 'insideBottom', offset: -5, style: { fontSize: 12, fill: '#a1a1aa' } }} tick={{ fontSize: 11, fill: '#a1a1aa' }} />
-                          <YAxis label={{ value: 'Margin of Error', angle: -90, position: 'insideLeft', offset: 10, style: { fontSize: 12, fill: '#a1a1aa' } }} tick={{ fontSize: 11, fill: '#a1a1aa' }} tickFormatter={v => `${(v * 100).toFixed(1)}%`} />
-                          <Tooltip contentStyle={{ borderRadius: 8, border: '1px solid #e4e4e7', fontSize: 13 }} formatter={(v) => [`±${(v * 100).toFixed(2)}%`, 'Margin of Error']} labelFormatter={(v) => `n = ${v}`} />
-                          <ReferenceLine y={result.marginOfError} stroke="#a1a1aa" strokeDasharray="5 5" label={{ value: `Target: ±${(result.marginOfError * 100).toFixed(1)}%`, position: 'right', fontSize: 11, fill: '#a1a1aa' }} />
-                          <ReferenceLine x={result.n} stroke="#a1a1aa" strokeDasharray="5 5" />
-                          <Line type="monotone" dataKey="marginOfError" stroke="#22c55e" strokeWidth={2.5} dot={false} activeDot={{ r: 5, fill: '#22c55e' }} />
-                        </LineChart>
-                      </ResponsiveContainer>
-                      <div style={{ position: 'absolute', bottom: 12, right: 16, opacity: 0.12, pointerEvents: 'none' }}>
-                        <img src={import.meta.env.BASE_URL + 'analytica-logo.png'} alt="" style={{ height: 22 }} />
-                      </div>
-                    </div>
-                  </div>
+            <div className="animate-in" style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
+              <div className="result-grid">
+                <div className="result-card">
+                  <div className="result-label">Required Sample Size</div>
+                  <div className="result-value" style={{ color: '#22c55e' }}>{result.n.toLocaleString()}</div>
+                  <div className="result-detail">survey responses needed</div>
                 </div>
               </div>
-            ) : (
+
+              <div className="result-grid">
+                <div className="stat-card">
+                  <div className="stat-value">{isFinite(result.population) ? result.population.toLocaleString() : '∞'}</div>
+                  <div className="stat-label">Population</div>
+                </div>
+                <div className="stat-card">
+                  <div className="stat-value">&plusmn;{(result.marginOfError * 100).toFixed(1)}%</div>
+                  <div className="stat-label">Margin of Error</div>
+                </div>
+                <div className="stat-card">
+                  <div className="stat-value">{(result.confLevel * 100).toFixed(0)}%</div>
+                  <div className="stat-label">Confidence Level</div>
+                </div>
+                <div className="stat-card">
+                  <div className="stat-value">{result.proportion}</div>
+                  <div className="stat-label">Expected Proportion</div>
+                </div>
+              </div>
+
               <div className="card">
-                <div className="empty-state">
-                  <h3>Configure Your Survey</h3>
-                  <p>Set your parameters and click Calculate to see results</p>
+                <div className="card-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <div>
+                    <h2 className="card-title">Margin of Error vs Sample Size</h2>
+                    <p className="card-subtitle">How precision improves as you collect more responses</p>
+                  </div>
+                  <ExportButton targetRef={exportRef} filename="survey-sample-size" />
+                </div>
+                <div className="card-body">
+                  <div className="chart-container" style={{ position: 'relative' }}>
+                    <ResponsiveContainer width="100%" height="100%">
+                      <LineChart data={curveData} margin={{ top: 5, right: 30, left: 10, bottom: 5 }}>
+                        <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f2" />
+                        <XAxis dataKey="n" label={{ value: 'Sample Size (n)', position: 'insideBottom', offset: -5, style: { fontSize: 12, fill: '#a1a1aa' } }} tick={{ fontSize: 11, fill: '#a1a1aa' }} />
+                        <YAxis label={{ value: 'Margin of Error', angle: -90, position: 'insideLeft', offset: 10, style: { fontSize: 12, fill: '#a1a1aa' } }} tick={{ fontSize: 11, fill: '#a1a1aa' }} tickFormatter={v => `${(v * 100).toFixed(1)}%`} />
+                        <Tooltip contentStyle={{ borderRadius: 8, border: '1px solid #e4e4e7', fontSize: 13 }} formatter={(v) => [`±${(v * 100).toFixed(2)}%`, 'Margin of Error']} labelFormatter={(v) => `n = ${v}`} />
+                        <ReferenceLine y={result.marginOfError} stroke="#a1a1aa" strokeDasharray="5 5" label={{ value: `Target: ±${(result.marginOfError * 100).toFixed(1)}%`, position: 'right', fontSize: 11, fill: '#a1a1aa' }} />
+                        <ReferenceLine x={result.n} stroke="#a1a1aa" strokeDasharray="5 5" />
+                        <Line type="monotone" dataKey="marginOfError" stroke="#22c55e" strokeWidth={2.5} dot={false} activeDot={{ r: 5, fill: '#22c55e' }} />
+                      </LineChart>
+                    </ResponsiveContainer>
+                    <div style={{ position: 'absolute', bottom: 12, right: 16, opacity: 0.12, pointerEvents: 'none' }}>
+                      <img src={import.meta.env.BASE_URL + 'analytica-logo.png'} alt="" style={{ height: 22 }} />
+                    </div>
+                  </div>
                 </div>
               </div>
-            )}
+            </div>
           </div>
         </div>
       </div>

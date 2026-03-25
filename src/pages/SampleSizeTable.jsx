@@ -1,4 +1,4 @@
-import { useState, useRef, useMemo, useEffect } from 'react';
+import { useState, useRef, useMemo } from 'react';
 import Slider from '../components/Slider';
 import ExportButton from '../components/ExportButton';
 import { sampleSizeTable } from '../lib/statistics';
@@ -62,10 +62,9 @@ export default function SampleSizeTable() {
   const [groups, setGroups] = useState(3);
   const [predictors, setPredictors] = useState(3);
   const [df, setDf] = useState(1);
-  const [result, setResult] = useState(null);
   const exportRef = useRef(null);
 
-  const handleCalculate = () => {
+  const result = useMemo(() => {
     const effectSizes = getEffectSizes(testType);
     const extraParams = {};
     if (testType === 'anova') extraParams.k = groups;
@@ -80,10 +79,8 @@ export default function SampleSizeTable() {
       extraParams,
     });
 
-    setResult({ tableData: res.table, effectSizes, testType, sigLevel });
-  };
-
-  useEffect(() => { handleCalculate(); }, []);
+    return { tableData: res.table, effectSizes, testType, sigLevel };
+  }, [testType, sigLevel, groups, predictors, df]);
 
   const testLabel = TEST_TYPES.find(t => t.value === testType)?.label;
 
@@ -126,54 +123,43 @@ export default function SampleSizeTable() {
               {testType === 'chisq' && (
                 <Slider label="Degrees of Freedom" value={df} onChange={(v) => setDf(Math.round(v))} min={1} max={10} step={1} format={v => Math.round(v)} />
               )}
-
-              <button className="btn btn-primary btn-block" onClick={handleCalculate}>Generate Table</button>
             </div>
           </div>
 
           <div ref={exportRef}>
-            {result ? (
-              <div className="animate-in" style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
-                <div className="card">
-                  <div className="card-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <div>
-                      <h2 className="card-title">Sample Size Table</h2>
-                      <p className="card-subtitle">{testLabel} &mdash; &alpha; = {result.sigLevel}</p>
-                    </div>
-                    <ExportButton targetRef={exportRef} filename="sample-size-table" />
+            <div className="animate-in" style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
+              <div className="card">
+                <div className="card-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <div>
+                    <h2 className="card-title">Sample Size Table</h2>
+                    <p className="card-subtitle">{testLabel} &mdash; &alpha; = {result.sigLevel}</p>
                   </div>
-                  <div className="card-body" style={{ overflowX: 'auto' }}>
-                    <table className="data-table">
-                      <thead>
-                        <tr>
-                          <th>{getEffectLabel(result.testType)}</th>
-                          {POWER_LEVELS.map(p => (
-                            <th key={p}>Power = {p}</th>
+                  <ExportButton targetRef={exportRef} filename="sample-size-table" />
+                </div>
+                <div className="card-body" style={{ overflowX: 'auto' }}>
+                  <table className="data-table">
+                    <thead>
+                      <tr>
+                        <th>{getEffectLabel(result.testType)}</th>
+                        {POWER_LEVELS.map(p => (
+                          <th key={p}>Power = {p}</th>
+                        ))}
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {result.tableData.map((row, i) => (
+                        <tr key={i}>
+                          <td style={{ fontWeight: 600 }}>{result.effectSizes[i]}</td>
+                          {row.map((cell, j) => (
+                            <td key={j}>{cell}</td>
                           ))}
                         </tr>
-                      </thead>
-                      <tbody>
-                        {result.tableData.map((row, i) => (
-                          <tr key={i}>
-                            <td style={{ fontWeight: 600 }}>{result.effectSizes[i]}</td>
-                            {row.map((cell, j) => (
-                              <td key={j}>{cell}</td>
-                            ))}
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
+                      ))}
+                    </tbody>
+                  </table>
                 </div>
               </div>
-            ) : (
-              <div className="card">
-                <div className="empty-state">
-                  <h3>Configure Your Table</h3>
-                  <p>Select a test type and click Generate Table to see results</p>
-                </div>
-              </div>
-            )}
+            </div>
           </div>
         </div>
       </div>

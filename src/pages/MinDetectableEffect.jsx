@@ -1,4 +1,4 @@
-import { useState, useRef, useMemo, useEffect } from 'react';
+import { useState, useRef, useMemo } from 'react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ReferenceLine } from 'recharts';
 import Slider from '../components/Slider';
 import ExportButton from '../components/ExportButton';
@@ -18,7 +18,6 @@ export default function MinDetectableEffect() {
   const [testType, setTestType] = useState('ttest');
   const [groups, setGroups] = useState(3);
   const [df, setDf] = useState(1);
-  const [result, setResult] = useState(null);
   const exportRef = useRef(null);
 
   const extraParams = useMemo(() => {
@@ -27,7 +26,7 @@ export default function MinDetectableEffect() {
     return {};
   }, [testType, groups, df]);
 
-  const handleCalculate = () => {
+  const result = useMemo(() => {
     const mde = minimumDetectableEffect({
       n: sampleSize,
       power,
@@ -35,16 +34,10 @@ export default function MinDetectableEffect() {
       testType,
       extraParams,
     });
-    setResult({ mde, sampleSize, power, testType });
-  };
-
-  // Auto-calculate on mount
-  useEffect(() => {
-    handleCalculate();
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+    return { mde, sampleSize, power, testType };
+  }, [sampleSize, power, sigLevel, testType, extraParams]);
 
   const curveData = useMemo(() => {
-    if (!result) return [];
     const data = [];
     const maxN = sampleSize * 3;
     const step = Math.max(1, Math.floor((maxN - 20) / 50));
@@ -59,7 +52,7 @@ export default function MinDetectableEffect() {
       data.push({ n, mde });
     }
     return data;
-  }, [result, sampleSize, power, sigLevel, testType, extraParams]);
+  }, [sampleSize, power, sigLevel, testType, extraParams]);
 
   const testLabel = TEST_TYPES.find(t => t.value === testType)?.label;
 
@@ -145,95 +138,82 @@ export default function MinDetectableEffect() {
                   format={v => Math.round(v)}
                 />
               )}
-
-              <button className="btn btn-primary btn-block" onClick={handleCalculate}>
-                Calculate MDE
-              </button>
             </div>
           </div>
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
-            {result ? (
-              <div className="animate-in" ref={exportRef}>
-                {/* Big number result */}
-                <div className="result-grid" style={{ marginBottom: 24 }}>
-                  <div className="result-card">
-                    <div className="result-label">Minimum Detectable Effect</div>
-                    <div className="result-value" style={{ color: '#0ea5e9' }}>{result.mde}</div>
-                    <div className="result-detail">smallest detectable effect size</div>
-                  </div>
-                </div>
-
-                {/* Parameters summary */}
-                <div className="result-grid" style={{ marginBottom: 24 }}>
-                  <div className="stat-card">
-                    <div className="stat-value">{result.sampleSize}</div>
-                    <div className="stat-label">Sample Size (n)</div>
-                  </div>
-                  <div className="stat-card">
-                    <div className="stat-value">{result.power}</div>
-                    <div className="stat-label">Power</div>
-                  </div>
-                  <div className="stat-card">
-                    <div className="stat-value">{testLabel}</div>
-                    <div className="stat-label">Test Type</div>
-                  </div>
-                </div>
-
-                {/* MDE curve */}
-                <div className="card">
-                  <div className="card-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <div>
-                      <h2 className="card-title">MDE vs. Sample Size</h2>
-                      <p className="card-subtitle">Minimum detectable effect decreases as sample size grows</p>
-                    </div>
-                    <ExportButton targetRef={exportRef} filename="min-detectable-effect" />
-                  </div>
-                  <div className="card-body">
-                    <div className="chart-container" style={{ position: 'relative' }}>
-                      <ResponsiveContainer width="100%" height="100%">
-                        <LineChart data={curveData} margin={{ top: 5, right: 30, left: 10, bottom: 5 }}>
-                          <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f2" />
-                          <XAxis
-                            dataKey="n"
-                            tick={{ fontSize: 11, fill: '#a1a1aa' }}
-                            label={{ value: 'Sample Size (n)', position: 'insideBottom', offset: -5, style: { fontSize: 12, fill: '#a1a1aa' } }}
-                          />
-                          <YAxis
-                            tick={{ fontSize: 11, fill: '#a1a1aa' }}
-                            label={{ value: 'Min. Detectable Effect', angle: -90, position: 'insideLeft', offset: 10, style: { fontSize: 12, fill: '#a1a1aa' } }}
-                          />
-                          <Tooltip
-                            contentStyle={{ borderRadius: 8, border: '1px solid #e4e4e7', fontSize: 13 }}
-                            formatter={(v) => [v.toFixed(4), 'MDE']}
-                            labelFormatter={(v) => `n = ${v}`}
-                          />
-                          <ReferenceLine x={sampleSize} stroke="#a1a1aa" strokeDasharray="5 5" label={{ value: `n = ${sampleSize}`, position: 'top', fontSize: 11, fill: '#a1a1aa' }} />
-                          <Line
-                            type="monotone"
-                            dataKey="mde"
-                            stroke="#0ea5e9"
-                            strokeWidth={2.5}
-                            dot={false}
-                            activeDot={{ r: 5, fill: '#0ea5e9' }}
-                          />
-                        </LineChart>
-                      </ResponsiveContainer>
-                      <div style={{ position: 'absolute', bottom: 12, right: 16, opacity: 0.12, pointerEvents: 'none' }}>
-                        <img src={import.meta.env.BASE_URL + 'analytica-logo.png'} alt="" style={{ height: 22 }} />
-                      </div>
-                    </div>
-                  </div>
+            <div className="animate-in" ref={exportRef}>
+              {/* Big number result */}
+              <div className="result-grid" style={{ marginBottom: 24 }}>
+                <div className="result-card">
+                  <div className="result-label">Minimum Detectable Effect</div>
+                  <div className="result-value" style={{ color: '#0ea5e9' }}>{result.mde}</div>
+                  <div className="result-detail">smallest detectable effect size</div>
                 </div>
               </div>
-            ) : (
+
+              {/* Parameters summary */}
+              <div className="result-grid" style={{ marginBottom: 24 }}>
+                <div className="stat-card">
+                  <div className="stat-value">{result.sampleSize}</div>
+                  <div className="stat-label">Sample Size (n)</div>
+                </div>
+                <div className="stat-card">
+                  <div className="stat-value">{result.power}</div>
+                  <div className="stat-label">Power</div>
+                </div>
+                <div className="stat-card">
+                  <div className="stat-value">{testLabel}</div>
+                  <div className="stat-label">Test Type</div>
+                </div>
+              </div>
+
+              {/* MDE curve */}
               <div className="card">
-                <div className="empty-state">
-                  <h3>Configure Your Analysis</h3>
-                  <p>Set your parameters and click Calculate to see results</p>
+                <div className="card-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <div>
+                    <h2 className="card-title">MDE vs. Sample Size</h2>
+                    <p className="card-subtitle">Minimum detectable effect decreases as sample size grows</p>
+                  </div>
+                  <ExportButton targetRef={exportRef} filename="min-detectable-effect" />
+                </div>
+                <div className="card-body">
+                  <div className="chart-container" style={{ position: 'relative' }}>
+                    <ResponsiveContainer width="100%" height="100%">
+                      <LineChart data={curveData} margin={{ top: 5, right: 30, left: 10, bottom: 5 }}>
+                        <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f2" />
+                        <XAxis
+                          dataKey="n"
+                          tick={{ fontSize: 11, fill: '#a1a1aa' }}
+                          label={{ value: 'Sample Size (n)', position: 'insideBottom', offset: -5, style: { fontSize: 12, fill: '#a1a1aa' } }}
+                        />
+                        <YAxis
+                          tick={{ fontSize: 11, fill: '#a1a1aa' }}
+                          label={{ value: 'Min. Detectable Effect', angle: -90, position: 'insideLeft', offset: 10, style: { fontSize: 12, fill: '#a1a1aa' } }}
+                        />
+                        <Tooltip
+                          contentStyle={{ borderRadius: 8, border: '1px solid #e4e4e7', fontSize: 13 }}
+                          formatter={(v) => [v.toFixed(4), 'MDE']}
+                          labelFormatter={(v) => `n = ${v}`}
+                        />
+                        <ReferenceLine x={sampleSize} stroke="#a1a1aa" strokeDasharray="5 5" label={{ value: `n = ${sampleSize}`, position: 'top', fontSize: 11, fill: '#a1a1aa' }} />
+                        <Line
+                          type="monotone"
+                          dataKey="mde"
+                          stroke="#0ea5e9"
+                          strokeWidth={2.5}
+                          dot={false}
+                          activeDot={{ r: 5, fill: '#0ea5e9' }}
+                        />
+                      </LineChart>
+                    </ResponsiveContainer>
+                    <div style={{ position: 'absolute', bottom: 12, right: 16, opacity: 0.12, pointerEvents: 'none' }}>
+                      <img src={import.meta.env.BASE_URL + 'analytica-logo.png'} alt="" style={{ height: 22 }} />
+                    </div>
+                  </div>
                 </div>
               </div>
-            )}
+            </div>
           </div>
         </div>
       </div>

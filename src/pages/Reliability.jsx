@@ -1,4 +1,4 @@
-import { useState, useRef, useMemo, useEffect } from 'react';
+import { useState, useRef, useMemo } from 'react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ReferenceLine } from 'recharts';
 import Slider from '../components/Slider';
 import ExportButton from '../components/ExportButton';
@@ -10,23 +10,20 @@ export default function Reliability() {
   const [k, setK] = useState(10);
   const [power, setPower] = useState(0.8);
   const [sigLevel, setSigLevel] = useState(0.05);
-  const [result, setResult] = useState(null);
   const exportRef = useRef(null);
 
   const isValid = alpha1 > alpha0;
 
-  const handleCalculate = () => {
-    if (!isValid) return;
+  const result = useMemo(() => {
+    if (!isValid) return { n: '—', alpha0, alpha1, k, power, sigLevel };
     const n = reliabilitySampleSize({ alpha0, alpha1, k, power, sigLevel });
-    setResult({ n, alpha0, alpha1, k, power, sigLevel });
-  };
-
-  useEffect(() => { handleCalculate(); }, []);
+    return { n, alpha0, alpha1, k, power, sigLevel };
+  }, [alpha0, alpha1, k, power, sigLevel, isValid]);
 
   const curveData = useMemo(() => {
-    if (!result) return [];
+    if (!isValid) return [];
     return reliabilityPowerCurve({ alpha0: result.alpha0, alpha1: result.alpha1, k: result.k, sigLevel: result.sigLevel });
-  }, [result]);
+  }, [isValid, result.alpha0, result.alpha1, result.k, result.sigLevel]);
 
   return (
     <>
@@ -78,77 +75,66 @@ export default function Reliability() {
               />
               <Slider label="Power" sublabel="1 - &beta;" value={power} onChange={setPower} min={0.5} max={0.99} step={0.01} />
               <Slider label="Significance Level" sublabel="&alpha;" value={sigLevel} onChange={setSigLevel} min={0.01} max={0.1} step={0.01} />
-
-              <button className="btn btn-primary btn-block" onClick={handleCalculate} disabled={!isValid}>Calculate</button>
             </div>
           </div>
 
           <div ref={exportRef}>
-            {result ? (
-              <div className="animate-in" style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
-                <div className="result-grid">
-                  <div className="result-card">
-                    <div className="result-label">Required N</div>
-                    <div className="result-value" style={{ color: '#7c3aed' }}>{result.n}</div>
-                    <div className="result-detail">participants needed</div>
-                  </div>
-                </div>
-
-                <div className="result-grid">
-                  <div className="stat-card">
-                    <div className="stat-value">{result.alpha0}</div>
-                    <div className="stat-label">Null Alpha (&alpha;&#x2080;)</div>
-                  </div>
-                  <div className="stat-card">
-                    <div className="stat-value">{result.alpha1}</div>
-                    <div className="stat-label">Expected Alpha (&alpha;&#x2081;)</div>
-                  </div>
-                  <div className="stat-card">
-                    <div className="stat-value">{result.k}</div>
-                    <div className="stat-label">Items (k)</div>
-                  </div>
-                  <div className="stat-card">
-                    <div className="stat-value">{result.power}</div>
-                    <div className="stat-label">Power</div>
-                  </div>
-                </div>
-
-                <div className="card">
-                  <div className="card-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <div>
-                      <h2 className="card-title">Power Curve</h2>
-                      <p className="card-subtitle">Power as a function of sample size</p>
-                    </div>
-                    <ExportButton targetRef={exportRef} filename="reliability-power-analysis" />
-                  </div>
-                  <div className="card-body">
-                    <div className="chart-container" style={{ position: 'relative' }}>
-                      <ResponsiveContainer width="100%" height="100%">
-                        <LineChart data={curveData} margin={{ top: 5, right: 30, left: 10, bottom: 5 }}>
-                          <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f2" />
-                          <XAxis dataKey="n" label={{ value: 'Sample Size (N)', position: 'insideBottom', offset: -5, style: { fontSize: 12, fill: '#a1a1aa' } }} tick={{ fontSize: 11, fill: '#a1a1aa' }} />
-                          <YAxis domain={[0, 1]} label={{ value: 'Power', angle: -90, position: 'insideLeft', offset: 10, style: { fontSize: 12, fill: '#a1a1aa' } }} tick={{ fontSize: 11, fill: '#a1a1aa' }} />
-                          <Tooltip contentStyle={{ borderRadius: 8, border: '1px solid #e4e4e7', fontSize: 13 }} formatter={(v) => [v.toFixed(4), 'Power']} labelFormatter={(v) => `n = ${v}`} />
-                          <ReferenceLine y={result.power} stroke="#a1a1aa" strokeDasharray="5 5" label={{ value: `Target: ${result.power}`, position: 'right', fontSize: 11, fill: '#a1a1aa' }} />
-                          <ReferenceLine x={result.n} stroke="#a1a1aa" strokeDasharray="5 5" />
-                          <Line type="monotone" dataKey="power" stroke="#7c3aed" strokeWidth={2.5} dot={false} activeDot={{ r: 5, fill: '#7c3aed' }} />
-                        </LineChart>
-                      </ResponsiveContainer>
-                      <div style={{ position: 'absolute', bottom: 12, right: 16, opacity: 0.12, pointerEvents: 'none' }}>
-                        <img src={import.meta.env.BASE_URL + 'analytica-logo.png'} alt="" style={{ height: 22 }} />
-                      </div>
-                    </div>
-                  </div>
+            <div className="animate-in" style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
+              <div className="result-grid">
+                <div className="result-card">
+                  <div className="result-label">Required N</div>
+                  <div className="result-value" style={{ color: '#7c3aed' }}>{result.n}</div>
+                  <div className="result-detail">participants needed</div>
                 </div>
               </div>
-            ) : (
+
+              <div className="result-grid">
+                <div className="stat-card">
+                  <div className="stat-value">{result.alpha0}</div>
+                  <div className="stat-label">Null Alpha (&alpha;&#x2080;)</div>
+                </div>
+                <div className="stat-card">
+                  <div className="stat-value">{result.alpha1}</div>
+                  <div className="stat-label">Expected Alpha (&alpha;&#x2081;)</div>
+                </div>
+                <div className="stat-card">
+                  <div className="stat-value">{result.k}</div>
+                  <div className="stat-label">Items (k)</div>
+                </div>
+                <div className="stat-card">
+                  <div className="stat-value">{result.power}</div>
+                  <div className="stat-label">Power</div>
+                </div>
+              </div>
+
               <div className="card">
-                <div className="empty-state">
-                  <h3>Configure Your Reliability Analysis</h3>
-                  <p>Set your parameters and click Calculate to see results</p>
+                <div className="card-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <div>
+                    <h2 className="card-title">Power Curve</h2>
+                    <p className="card-subtitle">Power as a function of sample size</p>
+                  </div>
+                  <ExportButton targetRef={exportRef} filename="reliability-power-analysis" />
+                </div>
+                <div className="card-body">
+                  <div className="chart-container" style={{ position: 'relative' }}>
+                    <ResponsiveContainer width="100%" height="100%">
+                      <LineChart data={curveData} margin={{ top: 5, right: 30, left: 10, bottom: 5 }}>
+                        <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f2" />
+                        <XAxis dataKey="n" label={{ value: 'Sample Size (N)', position: 'insideBottom', offset: -5, style: { fontSize: 12, fill: '#a1a1aa' } }} tick={{ fontSize: 11, fill: '#a1a1aa' }} />
+                        <YAxis domain={[0, 1]} label={{ value: 'Power', angle: -90, position: 'insideLeft', offset: 10, style: { fontSize: 12, fill: '#a1a1aa' } }} tick={{ fontSize: 11, fill: '#a1a1aa' }} />
+                        <Tooltip contentStyle={{ borderRadius: 8, border: '1px solid #e4e4e7', fontSize: 13 }} formatter={(v) => [v.toFixed(4), 'Power']} labelFormatter={(v) => `n = ${v}`} />
+                        <ReferenceLine y={result.power} stroke="#a1a1aa" strokeDasharray="5 5" label={{ value: `Target: ${result.power}`, position: 'right', fontSize: 11, fill: '#a1a1aa' }} />
+                        {isValid && <ReferenceLine x={result.n} stroke="#a1a1aa" strokeDasharray="5 5" />}
+                        <Line type="monotone" dataKey="power" stroke="#7c3aed" strokeWidth={2.5} dot={false} activeDot={{ r: 5, fill: '#7c3aed' }} />
+                      </LineChart>
+                    </ResponsiveContainer>
+                    <div style={{ position: 'absolute', bottom: 12, right: 16, opacity: 0.12, pointerEvents: 'none' }}>
+                      <img src={import.meta.env.BASE_URL + 'analytica-logo.png'} alt="" style={{ height: 22 }} />
+                    </div>
+                  </div>
                 </div>
               </div>
-            )}
+            </div>
           </div>
         </div>
       </div>

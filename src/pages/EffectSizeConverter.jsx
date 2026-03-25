@@ -1,4 +1,4 @@
-import { useState, useRef, useMemo, useEffect } from 'react';
+import { useState, useRef, useMemo } from 'react';
 import ExportButton from '../components/ExportButton';
 import { convertEffectSize } from '../lib/statistics';
 
@@ -15,32 +15,20 @@ const EFFECT_TYPES = [
 export default function EffectSizeConverter() {
   const [inputValue, setInputValue] = useState(0.5);
   const [inputType, setInputType] = useState('d');
-  const [results, setResults] = useState(null);
   const exportRef = useRef(null);
 
-  const handleCalculate = () => {
+  const displayResults = useMemo(() => {
     const converted = {};
     for (const t of EFFECT_TYPES) {
       converted[t.value] = convertEffectSize(inputValue, inputType, t.value);
     }
-    setResults(converted);
-  };
-
-  // Auto-calculate on mount
-  useEffect(() => {
-    handleCalculate();
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
-
-  // Recompute when inputs change
-  const displayResults = useMemo(() => {
-    if (!results) return null;
     return EFFECT_TYPES.map(t => ({
       key: t.value,
       label: t.label,
-      value: results[t.value],
+      value: converted[t.value],
       isSelf: t.value === inputType,
     }));
-  }, [results, inputType]);
+  }, [inputValue, inputType]);
 
   return (
     <>
@@ -80,37 +68,30 @@ export default function EffectSizeConverter() {
                     min={0}
                   />
                 </div>
-                <div className="form-group">
-                  <button className="btn btn-primary" onClick={handleCalculate}>
-                    Convert
-                  </button>
-                </div>
               </div>
             </div>
           </div>
 
           {/* Results grid */}
-          {displayResults && (
-            <div ref={exportRef}>
-              <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 12 }}>
-                <ExportButton targetRef={exportRef} filename="effect-size-converter" />
-              </div>
-              <div className="result-grid animate-in" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))' }}>
-                {displayResults.map(r => (
-                  <div
-                    className="stat-card"
-                    key={r.key}
-                    style={r.isSelf ? { borderColor: '#2563eb', borderWidth: 2 } : {}}
-                  >
-                    <div className="stat-value" style={r.isSelf ? { color: '#2563eb' } : {}}>
-                      {isFinite(r.value) ? r.value : '—'}
-                    </div>
-                    <div className="stat-label">{r.label}</div>
-                  </div>
-                ))}
-              </div>
+          <div ref={exportRef}>
+            <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 12 }}>
+              <ExportButton targetRef={exportRef} filename="effect-size-converter" />
             </div>
-          )}
+            <div className="result-grid animate-in" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))' }}>
+              {displayResults.map(r => (
+                <div
+                  className="stat-card"
+                  key={r.key}
+                  style={r.isSelf ? { borderColor: '#2563eb', borderWidth: 2 } : {}}
+                >
+                  <div className="stat-value" style={r.isSelf ? { color: '#2563eb' } : {}}>
+                    {isFinite(r.value) ? r.value : '—'}
+                  </div>
+                  <div className="stat-label">{r.label}</div>
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
       </div>
     </>
