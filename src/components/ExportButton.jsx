@@ -13,14 +13,13 @@ export default function ExportButton({ targetRef, filename = 'statpower-results'
     const currentTheme = root.getAttribute('data-theme');
     const wasDark = currentTheme === 'dark';
 
-    // Add export-mode class for boosted contrast
     root.classList.add('export-mode');
     if (wasDark) {
       root.setAttribute('data-theme', 'light');
     }
     await new Promise((r) => setTimeout(r, 100));
 
-    // Step 1: Capture content
+    // Capture at 2x — all canvas coordinates below are in 2x pixel space
     const contentCanvas = await html2canvas(el, {
       scale: 2,
       backgroundColor: '#ffffff',
@@ -34,7 +33,7 @@ export default function ExportButton({ targetRef, filename = 'statpower-results'
       root.setAttribute('data-theme', currentTheme);
     }
 
-    // Step 2: Load the colored logo
+    // Load logo
     const logo = new Image();
     logo.crossOrigin = 'anonymous';
     logo.src = import.meta.env.BASE_URL + 'analytica-logo.png';
@@ -43,11 +42,11 @@ export default function ExportButton({ targetRef, filename = 'statpower-results'
       else { logo.onload = resolve; logo.onerror = resolve; }
     });
 
-    // Step 3: Compose final canvas — bigger logo, stronger text
-    const pad = 80;
-    const headerH = 150;
-    const footerH = 90;
-    const gap = 32;
+    // ── All values below are in 2x pixel space (matching scale:2) ──
+    const pad = 120;
+    const headerH = 240;
+    const footerH = 160;
+    const gap = 48;
     const totalW = contentCanvas.width + pad * 2;
     const totalH = headerH + gap + contentCanvas.height + gap + footerH;
 
@@ -60,26 +59,26 @@ export default function ExportButton({ targetRef, filename = 'statpower-results'
     ctx.fillStyle = '#ffffff';
     ctx.fillRect(0, 0, totalW, totalH);
 
-    // ── Header: LARGE colored logo ──
-    const logoH = 80;
-    const logoW = logo.naturalWidth ? (logo.naturalWidth / logo.naturalHeight) * logoH : 240;
+    // ── Header logo — prominent ──
+    const logoH = 140;
+    const logoW = logo.naturalWidth ? (logo.naturalWidth / logo.naturalHeight) * logoH : 420;
     ctx.drawImage(logo, pad, (headerH - logoH) / 2, logoW, logoH);
 
-    // Right side: StatPower Pro branding — bigger text
+    // Right side branding
     ctx.textAlign = 'right';
     ctx.fillStyle = '#09090b';
-    ctx.font = '700 28px Inter, -apple-system, sans-serif';
-    ctx.fillText('StatPower Pro', totalW - pad, headerH / 2 - 8);
+    ctx.font = '700 48px Inter, -apple-system, sans-serif';
+    ctx.fillText('StatPower Pro', totalW - pad, headerH / 2 - 10);
     ctx.fillStyle = '#52525b';
-    ctx.font = '500 16px Inter, -apple-system, sans-serif';
-    ctx.fillText('Research Design Toolkit', totalW - pad, headerH / 2 + 18);
+    ctx.font = '500 28px Inter, -apple-system, sans-serif';
+    ctx.fillText('Research Design Toolkit', totalW - pad, headerH / 2 + 30);
 
-    // Header divider — teal accent line
+    // Teal divider
     ctx.strokeStyle = '#0d9488';
-    ctx.lineWidth = 4;
+    ctx.lineWidth = 6;
     ctx.beginPath();
-    ctx.moveTo(pad, headerH - 10);
-    ctx.lineTo(totalW - pad, headerH - 10);
+    ctx.moveTo(pad, headerH - 16);
+    ctx.lineTo(totalW - pad, headerH - 16);
     ctx.stroke();
 
     // ── Content ──
@@ -88,28 +87,29 @@ export default function ExportButton({ targetRef, filename = 'statpower-results'
     // ── Footer ──
     const footerY = headerH + gap + contentCanvas.height + gap;
 
-    // Footer divider
+    // Divider
     ctx.strokeStyle = '#d4d4d8';
-    ctx.lineWidth = 1;
+    ctx.lineWidth = 2;
     ctx.beginPath();
     ctx.moveTo(pad, footerY);
     ctx.lineTo(totalW - pad, footerY);
     ctx.stroke();
 
-    // Footer: logo on left — bigger
-    const footLogoH = 36;
-    const footLogoW = logo.naturalWidth ? (logo.naturalWidth / logo.naturalHeight) * footLogoH : 120;
-    ctx.drawImage(logo, pad, footerY + 22, footLogoW, footLogoH);
+    // Footer logo — clearly visible
+    const footLogoH = 60;
+    const footLogoW = logo.naturalWidth ? (logo.naturalWidth / logo.naturalHeight) * footLogoH : 200;
+    ctx.drawImage(logo, pad, footerY + 40, footLogoW, footLogoH);
 
-    // Footer text right — darker
+    // Footer text
     ctx.textAlign = 'right';
+    ctx.fillStyle = '#52525b';
+    ctx.font = '600 28px Inter, -apple-system, sans-serif';
+    ctx.fillText('analyticadss.com', totalW - pad, footerY + 56);
     ctx.fillStyle = '#71717a';
-    ctx.font = '600 16px Inter, -apple-system, sans-serif';
-    ctx.fillText('analyticadss.com', totalW - pad, footerY + 32);
-    ctx.font = '400 14px Inter, -apple-system, sans-serif';
+    ctx.font = '400 24px Inter, -apple-system, sans-serif';
     ctx.fillText(
       new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }),
-      totalW - pad, footerY + 54
+      totalW - pad, footerY + 92
     );
 
     return final;
@@ -123,10 +123,10 @@ export default function ExportButton({ targetRef, filename = 'statpower-results'
     const pdf = new jsPDF({
       orientation: canvas.width > canvas.height ? 'landscape' : 'portrait',
       unit: 'px',
-      format: [canvas.width, canvas.height],
+      format: [canvas.width / 2, canvas.height / 2],
     });
 
-    pdf.addImage(imgData, 'PNG', 0, 0, canvas.width, canvas.height);
+    pdf.addImage(imgData, 'PNG', 0, 0, canvas.width / 2, canvas.height / 2);
     pdf.save(`${filename}.pdf`);
   };
 

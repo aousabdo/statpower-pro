@@ -177,11 +177,11 @@ export default function App() {
             <ThemeToggle />
             <CiteButton />
           </div>
-          <a href="https://analyticadss.com" target="_blank" rel="noopener noreferrer" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <a href="https://analyticadss.com" target="_blank" rel="noopener noreferrer" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '4px 0' }}>
             <img
               src={import.meta.env.BASE_URL + 'analytica-logo.png'}
               alt="Analytica DSS"
-              style={{ height: 40 }}
+              style={{ height: 52, width: 'auto' }}
             />
           </a>
         </div>
