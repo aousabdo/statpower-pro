@@ -57,6 +57,7 @@ export default function Regression() {
               {/* Action buttons */}
               <div style={{ display: 'flex', gap: 6, marginTop: 16, flexWrap: 'wrap' }}>
                 <APAReport
+                  showPreview
                   testName="multiple regression"
                   testType="regression"
                   params={{ f2: result.f2, predictors, power, sigLevel }}

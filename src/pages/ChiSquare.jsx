@@ -56,6 +56,7 @@ export default function ChiSquare() {
               {/* Action buttons */}
               <div style={{ display: 'flex', gap: 6, marginTop: 16, flexWrap: 'wrap' }}>
                 <APAReport
+                  showPreview
                   testName="chi-square test"
                   testType="chi-square"
                   params={{ w: effectSize, df, power, sigLevel }}

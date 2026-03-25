@@ -89,6 +89,7 @@ export default function ABTest() {
               {/* Action buttons */}
               <div style={{ display: 'flex', gap: 6, marginTop: 16, flexWrap: 'wrap' }}>
                 <APAReport
+                  showPreview
                   testName="A/B test"
                   params={{ p1: result.p1, p2: result.p2, baseline, mde, power, sigLevel }}
                   result={{ n: result.n1, total: result.totalN, ...result }}

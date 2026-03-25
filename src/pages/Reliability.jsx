@@ -95,6 +95,7 @@ export default function Reliability() {
               {/* Action buttons */}
               <div style={{ display: 'flex', gap: 6, marginTop: 16, flexWrap: 'wrap' }}>
                 <APAReport
+                  showPreview
                   testName="reliability (Cronbach's alpha)"
                   params={{ alpha0, alpha1, k, power, sigLevel }}
                   result={result}

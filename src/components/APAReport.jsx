@@ -44,25 +44,23 @@ function buildGenericReport(testName, params, result) {
   return `A priori power analysis using StatPower Pro (Analytica DSS, 2026) for a ${testName} indicated that a minimum sample of ${n} (N = ${total} total) is required with ${power} power at \u03b1 = ${alpha}.`;
 }
 
-export default function APAReport({ testName, testType, params, result }) {
+export function generateAPAText({ testName, testType, params, result }) {
+  const template = testTemplates[testType];
+  if (template) return template(params, result);
+  return buildGenericReport(testName || testType || 'statistical test', params, result);
+}
+
+export default function APAReport({ testName, testType, params, result, showPreview = false }) {
   const [copied, setCopied] = useState(false);
 
-  const generateText = () => {
-    const template = testTemplates[testType];
-    if (template) {
-      return template(params, result);
-    }
-    return buildGenericReport(testName || testType || 'statistical test', params, result);
-  };
+  const text = generateAPAText({ testName, testType, params, result });
 
   const handleCopy = async () => {
-    const text = generateText();
     try {
       await navigator.clipboard.writeText(text);
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     } catch {
-      // Fallback
       const ta = document.createElement('textarea');
       ta.value = text;
       document.body.appendChild(ta);
@@ -93,9 +91,29 @@ export default function APAReport({ testName, testType, params, result }) {
   const Icon = copied ? Check : ClipboardCopy;
 
   return (
-    <button style={buttonStyle} onClick={handleCopy} title="Copy APA-style methods paragraph">
-      <Icon size={14} />
-      {copied ? 'Copied!' : 'Copy APA Report'}
-    </button>
+    <div>
+      <button style={buttonStyle} onClick={handleCopy} title="Copy APA-style methods paragraph">
+        <Icon size={14} />
+        {copied ? 'Copied!' : 'Copy APA Report'}
+      </button>
+      {showPreview && (
+        <div style={{
+          marginTop: 12,
+          padding: '14px 16px',
+          background: 'var(--bg-tertiary)',
+          border: '1px solid var(--border-light)',
+          borderRadius: 'var(--radius-sm)',
+          fontSize: 12.5,
+          lineHeight: 1.7,
+          color: 'var(--text-secondary)',
+          fontStyle: 'italic',
+        }}>
+          <div style={{ fontSize: 10, fontWeight: 600, textTransform: 'uppercase', letterSpacing: 0.5, color: 'var(--text-tertiary)', marginBottom: 6, fontStyle: 'normal' }}>
+            APA Methods Paragraph
+          </div>
+          {text}
+        </div>
+      )}
+    </div>
   );
 }

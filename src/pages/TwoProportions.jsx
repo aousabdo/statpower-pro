@@ -60,6 +60,7 @@ export default function TwoProportions() {
               {/* Action buttons */}
               <div style={{ display: 'flex', gap: 6, marginTop: 16, flexWrap: 'wrap' }}>
                 <APAReport
+                  showPreview
                   testName="two proportions test"
                   testType="two-proportions"
                   params={{ p1, p2, power, sigLevel }}

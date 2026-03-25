@@ -73,6 +73,7 @@ export default function PairedTTest() {
               {/* Action buttons */}
               <div style={{ display: 'flex', gap: 6, marginTop: 16, flexWrap: 'wrap' }}>
                 <APAReport
+                  showPreview
                   testName="paired t-test"
                   testType="paired-t"
                   params={{ d: effectSize, power, sigLevel }}

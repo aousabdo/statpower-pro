@@ -112,6 +112,7 @@ export default function SurveySampleSize() {
               {/* Action buttons */}
               <div style={{ display: 'flex', gap: 6, marginTop: 16, flexWrap: 'wrap' }}>
                 <APAReport
+                  showPreview
                   testName="survey sample size"
                   params={{ population: effectivePopulation, marginOfError, confLevel, proportion, power: confLevel }}
                   result={{ n: result.n, sampleSize: result.n }}

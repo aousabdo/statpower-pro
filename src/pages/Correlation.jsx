@@ -53,6 +53,7 @@ export default function Correlation() {
               {/* Action buttons */}
               <div style={{ display: 'flex', gap: 6, marginTop: 16, flexWrap: 'wrap' }}>
                 <APAReport
+                  showPreview
                   testName="correlation"
                   testType="correlation"
                   params={{ r, power, sigLevel }}

@@ -115,8 +115,10 @@ export default function Calculator() {
               <div style={{ display: 'flex', gap: 6, marginTop: 16, flexWrap: 'wrap' }}>
                 <APAReport
                   testName="t-test"
+                  testType="two-sample-t"
                   params={{ d: effectSize, power, sigLevel, type: testLabel }}
                   result={result}
+                  showPreview
                 />
                 <ShareLink
                   page="calculator"

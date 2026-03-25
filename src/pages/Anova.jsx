@@ -56,6 +56,7 @@ export default function Anova() {
               {/* Action buttons */}
               <div style={{ display: 'flex', gap: 6, marginTop: 16, flexWrap: 'wrap' }}>
                 <APAReport
+                  showPreview
                   testName="one-way ANOVA"
                   testType="anova"
                   params={{ f: effectSize, groups, k: groups, power, sigLevel }}

@@ -59,6 +59,7 @@ export default function Equivalence() {
               {/* Action buttons */}
               <div style={{ display: 'flex', gap: 6, marginTop: 16, flexWrap: 'wrap' }}>
                 <APAReport
+                  showPreview
                   testName="equivalence test (TOST)"
                   params={{ delta, sd, margin, power, sigLevel }}
                   result={result}
