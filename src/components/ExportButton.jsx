@@ -8,17 +8,19 @@ export default function ExportButton({ targetRef, filename = 'statpower-results'
     if (!targetRef.current) return null;
     const el = targetRef.current;
 
-    // ── Force light mode during capture so dark-mode text is readable on white ──
+    // ── Force light mode + boost contrast during capture ──
     const root = document.documentElement;
     const currentTheme = root.getAttribute('data-theme');
     const wasDark = currentTheme === 'dark';
 
+    // Add export-mode class for boosted contrast
+    root.classList.add('export-mode');
     if (wasDark) {
       root.setAttribute('data-theme', 'light');
-      await new Promise((r) => setTimeout(r, 80)); // let browser repaint
     }
+    await new Promise((r) => setTimeout(r, 100));
 
-    // Step 1: Capture content with proper light-mode contrast
+    // Step 1: Capture content
     const contentCanvas = await html2canvas(el, {
       scale: 2,
       backgroundColor: '#ffffff',
@@ -26,7 +28,8 @@ export default function ExportButton({ targetRef, filename = 'statpower-results'
       useCORS: true,
     });
 
-    // Restore theme immediately after capture
+    // Restore immediately
+    root.classList.remove('export-mode');
     if (wasDark) {
       root.setAttribute('data-theme', currentTheme);
     }
@@ -40,12 +43,11 @@ export default function ExportButton({ targetRef, filename = 'statpower-results'
       else { logo.onload = resolve; logo.onerror = resolve; }
     });
 
-    // Step 3: Compose final canvas with branded header + content + footer
-    const pad = 64;
-    const headerH = 120;
-    const footerH = 70;
-    const gap = 24;
-    const dividerPad = 8;
+    // Step 3: Compose final canvas — bigger logo, stronger text
+    const pad = 80;
+    const headerH = 150;
+    const footerH = 90;
+    const gap = 32;
     const totalW = contentCanvas.width + pad * 2;
     const totalH = headerH + gap + contentCanvas.height + gap + footerH;
 
@@ -58,26 +60,26 @@ export default function ExportButton({ targetRef, filename = 'statpower-results'
     ctx.fillStyle = '#ffffff';
     ctx.fillRect(0, 0, totalW, totalH);
 
-    // ── Header: large colored logo ──
-    const logoH = 56;
-    const logoW = logo.naturalWidth ? (logo.naturalWidth / logo.naturalHeight) * logoH : 180;
+    // ── Header: LARGE colored logo ──
+    const logoH = 80;
+    const logoW = logo.naturalWidth ? (logo.naturalWidth / logo.naturalHeight) * logoH : 240;
     ctx.drawImage(logo, pad, (headerH - logoH) / 2, logoW, logoH);
 
-    // Right side: StatPower Pro branding
+    // Right side: StatPower Pro branding — bigger text
     ctx.textAlign = 'right';
-    ctx.fillStyle = '#18181b';
-    ctx.font = '700 22px Inter, -apple-system, sans-serif';
-    ctx.fillText('StatPower Pro', totalW - pad, headerH / 2 - 6);
-    ctx.fillStyle = '#71717a';
-    ctx.font = '500 14px Inter, -apple-system, sans-serif';
-    ctx.fillText('Research Design Toolkit', totalW - pad, headerH / 2 + 16);
+    ctx.fillStyle = '#09090b';
+    ctx.font = '700 28px Inter, -apple-system, sans-serif';
+    ctx.fillText('StatPower Pro', totalW - pad, headerH / 2 - 8);
+    ctx.fillStyle = '#52525b';
+    ctx.font = '500 16px Inter, -apple-system, sans-serif';
+    ctx.fillText('Research Design Toolkit', totalW - pad, headerH / 2 + 18);
 
     // Header divider — teal accent line
     ctx.strokeStyle = '#0d9488';
-    ctx.lineWidth = 3;
+    ctx.lineWidth = 4;
     ctx.beginPath();
-    ctx.moveTo(pad, headerH - dividerPad);
-    ctx.lineTo(totalW - pad, headerH - dividerPad);
+    ctx.moveTo(pad, headerH - 10);
+    ctx.lineTo(totalW - pad, headerH - 10);
     ctx.stroke();
 
     // ── Content ──
@@ -87,27 +89,27 @@ export default function ExportButton({ targetRef, filename = 'statpower-results'
     const footerY = headerH + gap + contentCanvas.height + gap;
 
     // Footer divider
-    ctx.strokeStyle = '#e4e4e7';
+    ctx.strokeStyle = '#d4d4d8';
     ctx.lineWidth = 1;
     ctx.beginPath();
     ctx.moveTo(pad, footerY);
     ctx.lineTo(totalW - pad, footerY);
     ctx.stroke();
 
-    // Footer: small logo left + text
-    const footLogoH = 24;
-    const footLogoW = logo.naturalWidth ? (logo.naturalWidth / logo.naturalHeight) * footLogoH : 80;
-    ctx.drawImage(logo, pad, footerY + 18, footLogoW, footLogoH);
+    // Footer: logo on left — bigger
+    const footLogoH = 36;
+    const footLogoW = logo.naturalWidth ? (logo.naturalWidth / logo.naturalHeight) * footLogoH : 120;
+    ctx.drawImage(logo, pad, footerY + 22, footLogoW, footLogoH);
 
-    // Footer text right
+    // Footer text right — darker
     ctx.textAlign = 'right';
-    ctx.fillStyle = '#a1a1aa';
-    ctx.font = '500 15px Inter, -apple-system, sans-serif';
-    ctx.fillText('analyticadss.com', totalW - pad, footerY + 24);
-    ctx.font = '400 13px Inter, -apple-system, sans-serif';
+    ctx.fillStyle = '#71717a';
+    ctx.font = '600 16px Inter, -apple-system, sans-serif';
+    ctx.fillText('analyticadss.com', totalW - pad, footerY + 32);
+    ctx.font = '400 14px Inter, -apple-system, sans-serif';
     ctx.fillText(
       new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }),
-      totalW - pad, footerY + 44
+      totalW - pad, footerY + 54
     );
 
     return final;

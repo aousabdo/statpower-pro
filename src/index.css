@@ -572,10 +572,10 @@ input[type="range"]::-moz-range-thumb {
   position: absolute;
   bottom: 32px;
   right: 20px;
-  width: 90px;
-  height: 54px;
+  width: 130px;
+  height: 78px;
   background: url('/analytica-logo.png') no-repeat center / contain;
-  opacity: 0.08;
+  opacity: 0.10;
   pointer-events: none;
   z-index: 1;
 }
@@ -732,4 +732,75 @@ input[type="range"]::-moz-range-thumb {
 
 .empty-state p {
   font-size: 13.5px;
+}
+
+/* ─── Export Mode: boosted contrast for PDF/image exports ────── */
+/* Applied temporarily during html2canvas capture */
+
+.export-mode .result-label {
+  color: #3f3f46;
+}
+
+.export-mode .result-value {
+  color: #1d4ed8;
+}
+
+.export-mode .result-detail {
+  color: #3f3f46;
+}
+
+.export-mode .stat-value {
+  color: #09090b;
+}
+
+.export-mode .stat-label {
+  color: #52525b;
+}
+
+.export-mode .stat-card {
+  border-color: #d4d4d8;
+  background: #f9fafb;
+}
+
+.export-mode .result-card {
+  border-color: #bfdbfe;
+  background: #eff6ff;
+}
+
+.export-mode .card {
+  border-color: #d4d4d8;
+}
+
+.export-mode .section-title {
+  color: #09090b;
+}
+
+.export-mode .section-subtitle {
+  color: #3f3f46;
+}
+
+.export-mode .interpretation-text,
+.export-mode .interpretation-text p {
+  color: #27272a;
+}
+
+.export-mode .data-table th {
+  color: #09090b;
+  background: #f4f4f5;
+}
+
+.export-mode .data-table td {
+  color: #18181b;
+  border-color: #d4d4d8;
+}
+
+/* Make Recharts text darker in exports */
+.export-mode .recharts-cartesian-axis-tick text,
+.export-mode .recharts-label,
+.export-mode .recharts-legend-item-text {
+  fill: #27272a !important;
+}
+
+.export-mode .recharts-cartesian-grid line {
+  stroke: #d4d4d8 !important;
 }
