@@ -184,13 +184,13 @@ export default function App() {
         <div className="sidebar-header">
           <div className="sidebar-brand" style={{ cursor: 'pointer' }} onClick={() => handleNav('home')}>
             <img
-              src={import.meta.env.BASE_URL + 'analytica-logo.png'}
-              alt="Analytica"
-              style={{ height: 32, width: 'auto' }}
+              src={import.meta.env.BASE_URL + 'favicon.svg'}
+              alt="StatPower Pro"
+              style={{ height: 36, width: 36, borderRadius: 8 }}
             />
             <div className="sidebar-brand-text">
               <span className="sidebar-brand-name">StatPower Pro</span>
-              <span className="sidebar-brand-sub">Research Design Toolkit</span>
+              <span className="sidebar-brand-sub">by Analytica DSS</span>
             </div>
           </div>
         </div>
