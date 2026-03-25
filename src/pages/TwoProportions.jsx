@@ -1,7 +1,10 @@
-import { useState, useRef, useMemo } from 'react';
+import { useState, useRef, useMemo, useEffect } from 'react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ReferenceLine } from 'recharts';
 import Slider from '../components/Slider';
 import ExportButton from '../components/ExportButton';
+import APAReport from '../components/APAReport';
+import ShareLink from '../components/ShareLink';
+import MethodologyRef from '../components/MethodologyRef';
 import { pwrTwoProportions, twoProportionsPowerCurve } from '../lib/statistics';
 
 export default function TwoProportions() {
@@ -11,6 +14,19 @@ export default function TwoProportions() {
   const [sigLevel, setSigLevel] = useState(0.05);
   const [ratio, setRatio] = useState(1.0);
   const exportRef = useRef(null);
+
+  // Load from URL params
+  useEffect(() => {
+    const hash = window.location.hash;
+    const qIdx = hash.indexOf('?');
+    if (qIdx === -1) return;
+    const params = new URLSearchParams(hash.slice(qIdx));
+    if (params.get('p1')) setP1(parseFloat(params.get('p1')));
+    if (params.get('p2')) setP2(parseFloat(params.get('p2')));
+    if (params.get('ratio')) setRatio(parseFloat(params.get('ratio')));
+    if (params.get('power')) setPower(parseFloat(params.get('power')));
+    if (params.get('alpha')) setSigLevel(parseFloat(params.get('alpha')));
+  }, []);
 
   const result = useMemo(() => {
     const n1 = pwrTwoProportions({ p1, p2, power, sigLevel, ratio });
@@ -40,6 +56,20 @@ export default function TwoProportions() {
               <Slider label="Allocation Ratio" sublabel="n&sub2;/n&sub1;" value={ratio} onChange={setRatio} min={0.5} max={3.0} step={0.1} />
               <Slider label="Power" sublabel="1 - &beta;" value={power} onChange={setPower} min={0.5} max={0.99} step={0.01} />
               <Slider label="Significance Level" sublabel="&alpha;" value={sigLevel} onChange={setSigLevel} min={0.01} max={0.1} step={0.01} />
+
+              {/* Action buttons */}
+              <div style={{ display: 'flex', gap: 6, marginTop: 16, flexWrap: 'wrap' }}>
+                <APAReport
+                  testName="two proportions test"
+                  testType="two-proportions"
+                  params={{ p1, p2, power, sigLevel }}
+                  result={{ n: result.n1, total: result.total, ...result }}
+                />
+                <ShareLink
+                  page="two-proportions"
+                  params={{ p1, p2, ratio, power, alpha: sigLevel }}
+                />
+              </div>
             </div>
           </div>
 
@@ -110,6 +140,23 @@ export default function TwoProportions() {
                 </div>
               </div>
             </div>
+
+            {/* About the Math */}
+            <MethodologyRef
+              formula="n = (z_{α/2}√(2p̄q̄) + z_β√(p₁q₁ + p₂q₂))² / (p₁ - p₂)² — arcsine or normal approximation"
+              assumptions={[
+                'Independent groups',
+                'Binary outcome',
+                'Normal approximation valid for given proportions',
+              ]}
+              limitations={[
+                'Normal approximation may fail for very small proportions',
+              ]}
+              references={[
+                { author: 'Cohen, J.', year: 1988, title: 'Statistical Power Analysis for the Behavioral Sciences (2nd ed.). Lawrence Erlbaum Associates.' },
+                { author: 'Fleiss, J. L., Levin, B., & Paik, M. C.', year: 2003, title: 'Statistical Methods for Rates and Proportions (3rd ed.). John Wiley & Sons.' },
+              ]}
+            />
           </div>
         </div>
       </div>

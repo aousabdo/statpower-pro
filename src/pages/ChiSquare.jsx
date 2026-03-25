@@ -1,7 +1,10 @@
-import { useState, useRef, useMemo } from 'react';
+import { useState, useRef, useMemo, useEffect } from 'react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ReferenceLine } from 'recharts';
 import Slider from '../components/Slider';
 import ExportButton from '../components/ExportButton';
+import APAReport from '../components/APAReport';
+import ShareLink from '../components/ShareLink';
+import MethodologyRef from '../components/MethodologyRef';
 import { pwrChisqTest, chisqPowerCurve } from '../lib/statistics';
 
 export default function ChiSquare() {
@@ -10,6 +13,18 @@ export default function ChiSquare() {
   const [power, setPower] = useState(0.8);
   const [sigLevel, setSigLevel] = useState(0.05);
   const exportRef = useRef(null);
+
+  // Load from URL params
+  useEffect(() => {
+    const hash = window.location.hash;
+    const qIdx = hash.indexOf('?');
+    if (qIdx === -1) return;
+    const params = new URLSearchParams(hash.slice(qIdx));
+    if (params.get('df')) setDf(parseInt(params.get('df')));
+    if (params.get('w')) setEffectSize(parseFloat(params.get('w')));
+    if (params.get('power')) setPower(parseFloat(params.get('power')));
+    if (params.get('alpha')) setSigLevel(parseFloat(params.get('alpha')));
+  }, []);
 
   const result = useMemo(() => {
     const N = pwrChisqTest({ w: effectSize, df, power, sigLevel });
@@ -37,6 +52,20 @@ export default function ChiSquare() {
               <Slider label="Effect Size" sublabel="Cohen's w" value={effectSize} onChange={setEffectSize} min={0.1} max={1.0} step={0.05} />
               <Slider label="Power" sublabel="1 - β" value={power} onChange={setPower} min={0.5} max={0.99} step={0.01} />
               <Slider label="Significance Level" sublabel="α" value={sigLevel} onChange={setSigLevel} min={0.01} max={0.1} step={0.01} />
+
+              {/* Action buttons */}
+              <div style={{ display: 'flex', gap: 6, marginTop: 16, flexWrap: 'wrap' }}>
+                <APAReport
+                  testName="chi-square test"
+                  testType="chi-square"
+                  params={{ w: effectSize, df, power, sigLevel }}
+                  result={{ n: result.N, ...result }}
+                />
+                <ShareLink
+                  page="chi-square"
+                  params={{ df, w: effectSize, power, alpha: sigLevel }}
+                />
+              </div>
             </div>
           </div>
 
@@ -93,6 +122,22 @@ export default function ChiSquare() {
                 </div>
               </div>
             </div>
+
+            {/* About the Math */}
+            <MethodologyRef
+              formula="n = (z_{α/2} + z_β)² / w² — where w = Cohen's effect size for chi-square, df = (r-1)(c-1)"
+              assumptions={[
+                'Expected cell frequencies >= 5',
+                'Independent observations',
+              ]}
+              limitations={[
+                'Does not account for sparse tables',
+                'Goodness-of-fit only with specified df',
+              ]}
+              references={[
+                { author: 'Cohen, J.', year: 1988, title: 'Statistical Power Analysis for the Behavioral Sciences (2nd ed.). Lawrence Erlbaum Associates.' },
+              ]}
+            />
           </div>
         </div>
       </div>

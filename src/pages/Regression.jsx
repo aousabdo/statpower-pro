@@ -1,7 +1,10 @@
-import { useState, useRef, useMemo } from 'react';
+import { useState, useRef, useMemo, useEffect } from 'react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ReferenceLine } from 'recharts';
 import Slider from '../components/Slider';
 import ExportButton from '../components/ExportButton';
+import APAReport from '../components/APAReport';
+import ShareLink from '../components/ShareLink';
+import MethodologyRef from '../components/MethodologyRef';
 import { pwrRegression, regressionPowerCurve } from '../lib/statistics';
 
 export default function Regression() {
@@ -10,6 +13,18 @@ export default function Regression() {
   const [power, setPower] = useState(0.8);
   const [sigLevel, setSigLevel] = useState(0.05);
   const exportRef = useRef(null);
+
+  // Load from URL params
+  useEffect(() => {
+    const hash = window.location.hash;
+    const qIdx = hash.indexOf('?');
+    if (qIdx === -1) return;
+    const params = new URLSearchParams(hash.slice(qIdx));
+    if (params.get('r2')) setRSquared(parseFloat(params.get('r2')));
+    if (params.get('predictors')) setPredictors(parseInt(params.get('predictors')));
+    if (params.get('power')) setPower(parseFloat(params.get('power')));
+    if (params.get('alpha')) setSigLevel(parseFloat(params.get('alpha')));
+  }, []);
 
   const result = useMemo(() => {
     const f2 = rSquared / (1 - rSquared);
@@ -38,6 +53,20 @@ export default function Regression() {
               <Slider label="Number of Predictors" sublabel="u" value={predictors} onChange={(v) => setPredictors(Math.round(v))} min={1} max={20} step={1} format={v => Math.round(v)} />
               <Slider label="Power" sublabel="1 - &beta;" value={power} onChange={setPower} min={0.5} max={0.99} step={0.01} />
               <Slider label="Significance Level" sublabel="&alpha;" value={sigLevel} onChange={setSigLevel} min={0.01} max={0.1} step={0.01} />
+
+              {/* Action buttons */}
+              <div style={{ display: 'flex', gap: 6, marginTop: 16, flexWrap: 'wrap' }}>
+                <APAReport
+                  testName="multiple regression"
+                  testType="regression"
+                  params={{ f2: result.f2, predictors, power, sigLevel }}
+                  result={result}
+                />
+                <ShareLink
+                  page="regression"
+                  params={{ r2: rSquared, predictors, power, alpha: sigLevel }}
+                />
+              </div>
             </div>
           </div>
 
@@ -98,6 +127,24 @@ export default function Regression() {
                 </div>
               </div>
             </div>
+
+            {/* About the Math */}
+            <MethodologyRef
+              formula="n = (z_{α/2} + z_β)² / f² + u + 1 where f² = R²/(1-R²) and u = number of predictors"
+              assumptions={[
+                'Linear relationship between predictors and outcome',
+                'Normally distributed residuals',
+                'No multicollinearity among predictors',
+              ]}
+              limitations={[
+                'Assumes fixed number of predictors',
+                'Omnibus test only (not individual coefficients)',
+              ]}
+              references={[
+                { author: 'Cohen, J.', year: 1988, title: 'Statistical Power Analysis for the Behavioral Sciences (2nd ed.). Lawrence Erlbaum Associates.' },
+                { author: 'Green, S. B.', year: 1991, title: 'How many subjects does it take to do a regression analysis? Multivariate Behavioral Research, 26(3), 499-510.' },
+              ]}
+            />
           </div>
         </div>
       </div>

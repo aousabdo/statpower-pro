@@ -29,6 +29,7 @@ import ABTest from './pages/ABTest';
 import SurveySampleSize from './pages/SurveySampleSize';
 import Reliability from './pages/Reliability';
 import HomeLanding from './pages/Home';
+import Validation from './pages/Validation';
 import TestWizard from './pages/TestWizard';
 import ComparisonDashboard from './pages/ComparisonDashboard';
 import ThemeToggle from './components/ThemeToggle';
@@ -60,6 +61,7 @@ const NAV_ITEMS = [
   { id: 'pvalue', label: 'P-Value Distributions', icon: ScatterChart },
   { id: 'bayesian', label: 'Bayesian Sample Size', icon: BrainCircuit, section: 'Bayesian' },
   { id: 'comparison', label: 'Test Comparison', icon: BarChart3, section: 'Reference' },
+  { id: 'validation', label: 'G*Power Validation', icon: Shield },
   { id: 'guide', label: 'User Guide', icon: BookOpen },
 ];
 
@@ -85,6 +87,7 @@ const PAGES = {
   pvalue: PValueDistribution,
   bayesian: BayesianSampleSize,
   comparison: Comparison,
+  validation: Validation,
   guide: Guide,
 };
 
@@ -184,6 +187,10 @@ export default function App() {
               style={{ height: 80, width: 'auto' }}
             />
           </a>
+          <div style={{ marginTop: 8, fontSize: 10, color: 'var(--text-tertiary)', textAlign: 'center', lineHeight: 1.5 }}>
+            <div>v2.0 · Free for academic use</div>
+            <div style={{ marginTop: 2 }}>© {new Date().getFullYear()} Analytica DSS</div>
+          </div>
         </div>
       </aside>
 

@@ -1,7 +1,10 @@
-import { useState, useRef, useMemo } from 'react';
+import { useState, useRef, useMemo, useEffect } from 'react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ReferenceLine } from 'recharts';
 import Slider from '../components/Slider';
 import ExportButton from '../components/ExportButton';
+import APAReport from '../components/APAReport';
+import ShareLink from '../components/ShareLink';
+import MethodologyRef from '../components/MethodologyRef';
 import { reliabilitySampleSize, reliabilityPowerCurve } from '../lib/statistics';
 
 export default function Reliability() {
@@ -11,6 +14,19 @@ export default function Reliability() {
   const [power, setPower] = useState(0.8);
   const [sigLevel, setSigLevel] = useState(0.05);
   const exportRef = useRef(null);
+
+  // Load from URL params
+  useEffect(() => {
+    const hash = window.location.hash;
+    const qIdx = hash.indexOf('?');
+    if (qIdx === -1) return;
+    const params = new URLSearchParams(hash.slice(qIdx));
+    if (params.get('alpha0')) setAlpha0(parseFloat(params.get('alpha0')));
+    if (params.get('alpha1')) setAlpha1(parseFloat(params.get('alpha1')));
+    if (params.get('k')) setK(parseInt(params.get('k')));
+    if (params.get('power')) setPower(parseFloat(params.get('power')));
+    if (params.get('sig')) setSigLevel(parseFloat(params.get('sig')));
+  }, []);
 
   const isValid = alpha1 > alpha0;
 
@@ -75,6 +91,19 @@ export default function Reliability() {
               />
               <Slider label="Power" sublabel="1 - &beta;" value={power} onChange={setPower} min={0.5} max={0.99} step={0.01} />
               <Slider label="Significance Level" sublabel="&alpha;" value={sigLevel} onChange={setSigLevel} min={0.01} max={0.1} step={0.01} />
+
+              {/* Action buttons */}
+              <div style={{ display: 'flex', gap: 6, marginTop: 16, flexWrap: 'wrap' }}>
+                <APAReport
+                  testName="reliability (Cronbach's alpha)"
+                  params={{ alpha0, alpha1, k, power, sigLevel }}
+                  result={result}
+                />
+                <ShareLink
+                  page="reliability"
+                  params={{ alpha0, alpha1, k, power, sig: sigLevel }}
+                />
+              </div>
             </div>
           </div>
 
@@ -135,6 +164,23 @@ export default function Reliability() {
                 </div>
               </div>
             </div>
+
+            {/* About the Math */}
+            <MethodologyRef
+              formula="Uses Feldt et al. (1987) approach for testing H₀: α = α₀ vs H₁: α = α₁"
+              assumptions={[
+                'Items are essentially tau-equivalent',
+                'Multivariate normality of item scores',
+              ]}
+              limitations={[
+                "Cronbach's alpha only",
+                'Assumes tau-equivalence (equal factor loadings)',
+              ]}
+              references={[
+                { author: 'Feldt, L. S., Woodruff, D. J., & Salih, F. A.', year: 1987, title: 'Statistical inference for coefficient alpha. Applied Psychological Measurement, 11(1), 93-103.' },
+                { author: 'Bonett, D. G.', year: 2002, title: 'Sample size requirements for testing and estimating coefficient alpha. Journal of Educational and Behavioral Statistics, 27(4), 335-340.' },
+              ]}
+            />
           </div>
         </div>
       </div>

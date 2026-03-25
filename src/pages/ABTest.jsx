@@ -1,7 +1,10 @@
-import { useState, useRef, useMemo } from 'react';
+import { useState, useRef, useMemo, useEffect } from 'react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ReferenceLine } from 'recharts';
 import Slider from '../components/Slider';
 import ExportButton from '../components/ExportButton';
+import APAReport from '../components/APAReport';
+import ShareLink from '../components/ShareLink';
+import MethodologyRef from '../components/MethodologyRef';
 import { abTestDuration, twoProportionsPowerCurve } from '../lib/statistics';
 
 export default function ABTest() {
@@ -11,6 +14,19 @@ export default function ABTest() {
   const [sigLevel, setSigLevel] = useState(0.05);
   const [dailyVisitors, setDailyVisitors] = useState(10000);
   const exportRef = useRef(null);
+
+  // Load from URL params
+  useEffect(() => {
+    const hash = window.location.hash;
+    const qIdx = hash.indexOf('?');
+    if (qIdx === -1) return;
+    const params = new URLSearchParams(hash.slice(qIdx));
+    if (params.get('baseline')) setBaseline(parseFloat(params.get('baseline')));
+    if (params.get('mde')) setMde(parseFloat(params.get('mde')));
+    if (params.get('power')) setPower(parseFloat(params.get('power')));
+    if (params.get('alpha')) setSigLevel(parseFloat(params.get('alpha')));
+    if (params.get('visitors')) setDailyVisitors(parseInt(params.get('visitors')));
+  }, []);
 
   const result = useMemo(() => {
     const { n1, n2, totalN, days } = abTestDuration({ baseline, mde, power, sigLevel, dailyVisitors });
@@ -67,6 +83,19 @@ export default function ABTest() {
                   value={dailyVisitors}
                   onChange={e => setDailyVisitors(Math.max(1, Number(e.target.value) || 1))}
                   min={1}
+                />
+              </div>
+
+              {/* Action buttons */}
+              <div style={{ display: 'flex', gap: 6, marginTop: 16, flexWrap: 'wrap' }}>
+                <APAReport
+                  testName="A/B test"
+                  params={{ p1: result.p1, p2: result.p2, baseline, mde, power, sigLevel }}
+                  result={{ n: result.n1, total: result.totalN, ...result }}
+                />
+                <ShareLink
+                  page="ab-test"
+                  params={{ baseline, mde, power, alpha: sigLevel, visitors: dailyVisitors }}
                 />
               </div>
             </div>
@@ -139,6 +168,24 @@ export default function ABTest() {
                 </div>
               </div>
             </div>
+
+            {/* About the Math */}
+            <MethodologyRef
+              formula="n per variant = (z_{α/2} + z_β)² × (p₁(1-p₁) + p₂(1-p₂)) / (p₂ - p₁)² — with MDE as relative lift"
+              assumptions={[
+                'Fixed traffic allocation',
+                'Independent visitors',
+                'Stable baseline conversion rate',
+              ]}
+              limitations={[
+                'Does not account for multiple testing or peeking',
+                'Does not support sequential analysis',
+              ]}
+              references={[
+                { author: 'Kohavi, R., Longbotham, R., Sommerfield, D., & Henne, R. M.', year: 2009, title: 'Controlled experiments on the web: survey and practical guide. Data Mining and Knowledge Discovery, 18(1), 140-181.' },
+                { author: 'Deng, A., Xu, Y., Kohavi, R., & Walker, T.', year: 2013, title: 'Improving the sensitivity of online controlled experiments by utilizing pre-experiment data. Proceedings of WSDM 2013.' },
+              ]}
+            />
           </div>
         </div>
       </div>

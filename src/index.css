@@ -695,6 +695,46 @@ input[type="range"]::-moz-range-thumb {
   .result-grid {
     grid-template-columns: 1fr 1fr;
   }
+
+  .page-title {
+    font-size: 22px;
+  }
+
+  .page-subtitle {
+    font-size: 13px;
+  }
+
+  .result-value {
+    font-size: 28px;
+  }
+
+  .chart-container,
+  .chart-container-tall {
+    height: 300px;
+  }
+
+  .chart-container::after,
+  .chart-container-tall::after {
+    width: 120px;
+    height: 72px;
+    bottom: 16px;
+    right: 8px;
+  }
+
+  .card-header {
+    flex-direction: column;
+    align-items: flex-start !important;
+    gap: 8px;
+  }
+
+  .data-table {
+    font-size: 11.5px;
+  }
+
+  .data-table th,
+  .data-table td {
+    padding: 6px 8px;
+  }
 }
 
 /* ─── Animations ─────────────────────────────────────────────── */

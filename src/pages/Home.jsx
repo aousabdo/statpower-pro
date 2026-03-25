@@ -24,7 +24,46 @@ import {
   Lightbulb,
   Microscope,
   Beaker,
+  Globe,
+  GraduationCap,
+  LayoutGrid,
+  FileText,
+  CheckCircle2,
+  Smartphone,
 } from 'lucide-react';
+
+const BENEFITS = [
+  {
+    icon: Globe,
+    title: 'No Installation Required',
+    desc: 'Runs entirely in your browser. No software to download, no Java, no admin rights needed. Works on any device.',
+  },
+  {
+    icon: GraduationCap,
+    title: 'Free for Academic Use',
+    desc: 'Built for researchers, students, and educators. No account required, no usage limits, no paywalls.',
+  },
+  {
+    icon: LayoutGrid,
+    title: '22 Statistical Tools',
+    desc: 'From basic t-tests to Bayesian sample size planning, equivalence testing, and effect size interpretation.',
+  },
+  {
+    icon: FileText,
+    title: 'Publication-Ready Exports',
+    desc: 'Generate APA-formatted methods paragraphs and branded PDF reports ready for your manuscript.',
+  },
+  {
+    icon: CheckCircle2,
+    title: 'Validated Against G*Power',
+    desc: 'Results verified against G*Power 3.1 for all standard test configurations. See our validation page.',
+  },
+  {
+    icon: Smartphone,
+    title: 'Modern & Accessible',
+    desc: 'Dark mode, mobile-friendly, keyboard shortcuts, and shareable links. Statistics shouldn\u2019t feel dated.',
+  },
+];
 
 const SECTIONS = [
   {
@@ -161,6 +200,71 @@ export default function Home({ onNavigate }) {
             </div>
           </div>
         ))}
+      </div>
+
+      {/* Why StatPower Pro? */}
+      <div style={{
+        maxWidth: 900,
+        margin: '0 auto',
+        padding: '8px 24px 40px',
+      }}>
+        <h2 style={{
+          fontSize: 20,
+          fontWeight: 700,
+          color: 'var(--text-primary)',
+          textAlign: 'center',
+          marginBottom: 24,
+          letterSpacing: -0.3,
+        }}>
+          Why StatPower Pro?
+        </h2>
+        <div style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fill, minmax(250px, 1fr))',
+          gap: 16,
+        }}>
+          {BENEFITS.map((benefit) => {
+            const Icon = benefit.icon;
+            return (
+              <div
+                key={benefit.title}
+                className="card"
+                style={{ transition: 'all 0.15s ease' }}
+              >
+                <div className="card-body" style={{ padding: '20px' }}>
+                  <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12 }}>
+                    <div style={{
+                      color: 'var(--accent)',
+                      flexShrink: 0,
+                      marginTop: 2,
+                    }}>
+                      <Icon size={20} />
+                    </div>
+                    <div>
+                      <h3 style={{ fontSize: 14, fontWeight: 600, marginBottom: 4, color: 'var(--text-primary)' }}>
+                        {benefit.title}
+                      </h3>
+                      <p style={{ fontSize: 12.5, color: 'var(--text-secondary)', margin: 0, lineHeight: 1.5 }}>
+                        {benefit.desc}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+
+        {/* Trusted by */}
+        <div style={{
+          textAlign: 'center',
+          marginTop: 32,
+          fontSize: 13,
+          color: 'var(--text-tertiary)',
+          fontStyle: 'italic',
+        }}>
+          Used by researchers and students worldwide
+        </div>
       </div>
 
       {/* Footer */}

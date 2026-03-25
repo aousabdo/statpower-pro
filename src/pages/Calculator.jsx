@@ -1,7 +1,10 @@
-import { useState, useRef, useMemo } from 'react';
+import { useState, useRef, useMemo, useEffect } from 'react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ReferenceLine } from 'recharts';
 import Slider from '../components/Slider';
 import ExportButton from '../components/ExportButton';
+import APAReport from '../components/APAReport';
+import ShareLink from '../components/ShareLink';
+import MethodologyRef from '../components/MethodologyRef';
 import { pwrTTest, powerCurveData } from '../lib/statistics';
 
 const TEST_TYPES = [
@@ -16,6 +19,18 @@ export default function Calculator() {
   const [power, setPower] = useState(0.8);
   const [sigLevel, setSigLevel] = useState(0.05);
   const exportRef = useRef(null);
+
+  // Load from URL params
+  useEffect(() => {
+    const hash = window.location.hash;
+    const qIdx = hash.indexOf('?');
+    if (qIdx === -1) return;
+    const params = new URLSearchParams(hash.slice(qIdx));
+    if (params.get('d')) setEffectSize(parseFloat(params.get('d')));
+    if (params.get('power')) setPower(parseFloat(params.get('power')));
+    if (params.get('alpha')) setSigLevel(parseFloat(params.get('alpha')));
+    if (params.get('type')) setTestType(params.get('type'));
+  }, []);
 
   const result = useMemo(() => {
     const n = pwrTTest({ d: effectSize, power, sigLevel, type: testType });
@@ -95,6 +110,19 @@ export default function Calculator() {
                 max={0.1}
                 step={0.01}
               />
+
+              {/* Action buttons */}
+              <div style={{ display: 'flex', gap: 6, marginTop: 16, flexWrap: 'wrap' }}>
+                <APAReport
+                  testName="t-test"
+                  params={{ d: effectSize, power, sigLevel, type: testLabel }}
+                  result={result}
+                />
+                <ShareLink
+                  page="calculator"
+                  params={{ d: effectSize, power, alpha: sigLevel, type: testType }}
+                />
+              </div>
             </div>
           </div>
 
@@ -137,6 +165,18 @@ export default function Calculator() {
                 </div>
               </div>
 
+              {/* Interpretation */}
+              <div className="card" style={{ marginBottom: 24 }}>
+                <div className="card-body">
+                  <p style={{ fontSize: 14, lineHeight: 1.7, color: 'var(--text-secondary)', margin: 0 }}>
+                    You need <strong style={{ color: 'var(--text-primary)' }}>{result.n} participants per group</strong>
+                    {result.testType === 'two.sample' && <> (<strong style={{ color: 'var(--text-primary)' }}>{result.total} total</strong>)</>}
+                    {' '}to detect a {effectSize <= 0.2 ? 'small' : effectSize <= 0.5 ? 'medium' : 'large'} effect
+                    (d = {effectSize}) with {(power * 100).toFixed(0)}% power at α = {sigLevel} ({testLabel.toLowerCase()} t-test).
+                  </p>
+                </div>
+              </div>
+
               {/* Power curve */}
               <div className="card">
                 <div className="card-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -150,41 +190,59 @@ export default function Calculator() {
                   <div className="chart-container" style={{ position: 'relative' }}>
                     <ResponsiveContainer width="100%" height="100%">
                       <LineChart data={curveData} margin={{ top: 5, right: 30, left: 10, bottom: 5 }}>
-                        <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f2" />
+                        <CartesianGrid strokeDasharray="3 3" stroke="var(--border-light)" />
                         <XAxis
                           dataKey="d"
-                          label={{ value: "Effect Size (Cohen's d)", position: 'insideBottom', offset: -5, style: { fontSize: 12, fill: '#a1a1aa' } }}
-                          tick={{ fontSize: 11, fill: '#a1a1aa' }}
+                          label={{ value: "Effect Size (Cohen's d)", position: 'insideBottom', offset: -5, style: { fontSize: 12, fill: 'var(--text-tertiary)' } }}
+                          tick={{ fontSize: 11, fill: 'var(--text-tertiary)' }}
                         />
                         <YAxis
                           domain={[0, 1]}
-                          label={{ value: 'Power', angle: -90, position: 'insideLeft', offset: 10, style: { fontSize: 12, fill: '#a1a1aa' } }}
-                          tick={{ fontSize: 11, fill: '#a1a1aa' }}
+                          label={{ value: 'Power', angle: -90, position: 'insideLeft', offset: 10, style: { fontSize: 12, fill: 'var(--text-tertiary)' } }}
+                          tick={{ fontSize: 11, fill: 'var(--text-tertiary)' }}
                         />
                         <Tooltip
-                          contentStyle={{ borderRadius: 8, border: '1px solid #e4e4e7', fontSize: 13 }}
+                          contentStyle={{ borderRadius: 8, border: '1px solid var(--border)', fontSize: 13, background: 'var(--bg-secondary)' }}
                           formatter={(v) => [v.toFixed(4), 'Power']}
                           labelFormatter={(v) => `d = ${v}`}
                         />
-                        <ReferenceLine y={result.power} stroke="#a1a1aa" strokeDasharray="5 5" label={{ value: `Target: ${result.power}`, position: 'right', fontSize: 11, fill: '#a1a1aa' }} />
-                        <ReferenceLine x={result.effectSize} stroke="#a1a1aa" strokeDasharray="5 5" />
+                        <ReferenceLine y={result.power} stroke="var(--text-tertiary)" strokeDasharray="5 5" label={{ value: `Target: ${result.power}`, position: 'right', fontSize: 11, fill: 'var(--text-tertiary)' }} />
+                        <ReferenceLine x={result.effectSize} stroke="var(--text-tertiary)" strokeDasharray="5 5" />
                         <Line
                           type="monotone"
                           dataKey="power"
-                          stroke="#2563eb"
+                          stroke="var(--accent)"
                           strokeWidth={2.5}
                           dot={false}
-                          activeDot={{ r: 5, fill: '#2563eb' }}
+                          activeDot={{ r: 5, fill: 'var(--accent)' }}
                         />
                       </LineChart>
                     </ResponsiveContainer>
-                    <div style={{ position: 'absolute', bottom: 12, right: 16, opacity: 0.12, pointerEvents: 'none' }}>
-                      <img src={import.meta.env.BASE_URL + 'analytica-logo.png'} alt="" style={{ height: 22 }} />
-                    </div>
                   </div>
                 </div>
               </div>
             </div>
+
+            {/* About the Math */}
+            <MethodologyRef
+              formula="n = ((z_{α/2} + z_β)² × 2) / d² — for two-sample t-test. Uses the noncentral t-distribution for exact calculations."
+              assumptions={[
+                'Data are normally distributed in each group',
+                'Equal variances across groups (for two-sample)',
+                'Independent observations within and between groups',
+                'Effect size (d) is the standardized mean difference (Cohen\'s d)',
+              ]}
+              limitations={[
+                'Assumes equal sample sizes per group',
+                'Does not account for attrition or missing data',
+                'Normality assumption may not hold for small samples',
+                'For unequal variances, consider Welch\'s t-test adjustments',
+              ]}
+              references={[
+                { author: 'Cohen, J.', year: 1988, title: 'Statistical Power Analysis for the Behavioral Sciences (2nd ed.). Lawrence Erlbaum Associates.' },
+                { author: 'Faul, F., Erdfelder, E., Lang, A.-G., & Buchner, A.', year: 2007, title: 'G*Power 3: A flexible statistical power analysis program. Behavior Research Methods, 39(2), 175-191.' },
+              ]}
+            />
           </div>
         </div>
       </div>

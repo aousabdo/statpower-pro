@@ -1,7 +1,10 @@
-import { useState, useRef, useMemo } from 'react';
+import { useState, useRef, useMemo, useEffect } from 'react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ReferenceLine } from 'recharts';
 import Slider from '../components/Slider';
 import ExportButton from '../components/ExportButton';
+import APAReport from '../components/APAReport';
+import ShareLink from '../components/ShareLink';
+import MethodologyRef from '../components/MethodologyRef';
 import { surveySampleSize, surveyMoECurve } from '../lib/statistics';
 
 export default function SurveySampleSize() {
@@ -11,6 +14,21 @@ export default function SurveySampleSize() {
   const [confLevel, setConfLevel] = useState(0.95);
   const [proportion, setProportion] = useState(0.5);
   const exportRef = useRef(null);
+
+  // Load from URL params
+  useEffect(() => {
+    const hash = window.location.hash;
+    const qIdx = hash.indexOf('?');
+    if (qIdx === -1) return;
+    const params = new URLSearchParams(hash.slice(qIdx));
+    if (params.get('pop')) {
+      const popVal = params.get('pop');
+      if (popVal === 'inf') { setInfinitePop(true); } else { setPopulation(parseInt(popVal)); }
+    }
+    if (params.get('moe')) setMarginOfError(parseFloat(params.get('moe')));
+    if (params.get('conf')) setConfLevel(parseFloat(params.get('conf')));
+    if (params.get('p')) setProportion(parseFloat(params.get('p')));
+  }, []);
 
   const effectivePopulation = infinitePop ? Infinity : population;
 
@@ -90,6 +108,19 @@ export default function SurveySampleSize() {
                 max={0.9}
                 step={0.05}
               />
+
+              {/* Action buttons */}
+              <div style={{ display: 'flex', gap: 6, marginTop: 16, flexWrap: 'wrap' }}>
+                <APAReport
+                  testName="survey sample size"
+                  params={{ population: effectivePopulation, marginOfError, confLevel, proportion, power: confLevel }}
+                  result={{ n: result.n, sampleSize: result.n }}
+                />
+                <ShareLink
+                  page="survey"
+                  params={{ pop: infinitePop ? 'inf' : population, moe: marginOfError, conf: confLevel, p: proportion }}
+                />
+              </div>
             </div>
           </div>
 
@@ -150,6 +181,22 @@ export default function SurveySampleSize() {
                 </div>
               </div>
             </div>
+
+            {/* About the Math */}
+            <MethodologyRef
+              formula="n = (z² × p(1-p)) / e² with finite population correction: n_adj = n / (1 + (n-1)/N)"
+              assumptions={[
+                'Simple random sampling',
+                'Accurate population estimate',
+              ]}
+              limitations={[
+                'Does not account for clustering, stratification, or design effects',
+              ]}
+              references={[
+                { author: 'Cochran, W. G.', year: 1977, title: 'Sampling Techniques (3rd ed.). John Wiley & Sons.' },
+                { author: 'Krejcie, R. V., & Morgan, D. W.', year: 1970, title: 'Determining sample size for research activities. Educational and Psychological Measurement, 30(3), 607-610.' },
+              ]}
+            />
           </div>
         </div>
       </div>

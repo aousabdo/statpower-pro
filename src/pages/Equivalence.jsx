@@ -1,7 +1,10 @@
-import { useState, useRef, useMemo } from 'react';
+import { useState, useRef, useMemo, useEffect } from 'react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ReferenceLine } from 'recharts';
 import Slider from '../components/Slider';
 import ExportButton from '../components/ExportButton';
+import APAReport from '../components/APAReport';
+import ShareLink from '../components/ShareLink';
+import MethodologyRef from '../components/MethodologyRef';
 import { pwrTOST, tostPowerCurve } from '../lib/statistics';
 
 export default function Equivalence() {
@@ -11,6 +14,19 @@ export default function Equivalence() {
   const [power, setPower] = useState(0.8);
   const [sigLevel, setSigLevel] = useState(0.05);
   const exportRef = useRef(null);
+
+  // Load from URL params
+  useEffect(() => {
+    const hash = window.location.hash;
+    const qIdx = hash.indexOf('?');
+    if (qIdx === -1) return;
+    const params = new URLSearchParams(hash.slice(qIdx));
+    if (params.get('delta')) setDelta(parseFloat(params.get('delta')));
+    if (params.get('sd')) setSd(parseFloat(params.get('sd')));
+    if (params.get('margin')) setMargin(parseFloat(params.get('margin')));
+    if (params.get('power')) setPower(parseFloat(params.get('power')));
+    if (params.get('alpha')) setSigLevel(parseFloat(params.get('alpha')));
+  }, []);
 
   const result = useMemo(() => {
     const n = pwrTOST({ delta, sd, power, sigLevel, margin });
@@ -39,6 +55,19 @@ export default function Equivalence() {
               <Slider label="Equivalence Margin" sublabel="&epsilon;" value={margin} onChange={setMargin} min={0.1} max={2.0} step={0.05} />
               <Slider label="Power" sublabel="1 - &beta;" value={power} onChange={setPower} min={0.5} max={0.99} step={0.01} />
               <Slider label="Significance Level" sublabel="&alpha;" value={sigLevel} onChange={setSigLevel} min={0.01} max={0.1} step={0.01} />
+
+              {/* Action buttons */}
+              <div style={{ display: 'flex', gap: 6, marginTop: 16, flexWrap: 'wrap' }}>
+                <APAReport
+                  testName="equivalence test (TOST)"
+                  params={{ delta, sd, margin, power, sigLevel }}
+                  result={result}
+                />
+                <ShareLink
+                  page="equivalence"
+                  params={{ delta, sd, margin, power, alpha: sigLevel }}
+                />
+              </div>
             </div>
           </div>
 
@@ -99,6 +128,23 @@ export default function Equivalence() {
                 </div>
               </div>
             </div>
+
+            {/* About the Math */}
+            <MethodologyRef
+              formula="Uses TOST (Two One-Sided Tests): n = (t_{α,df} + t_{β,df})² × σ² / (δ - |Δ|)² where δ = equivalence margin"
+              assumptions={[
+                'Normal distributions in both groups',
+                'Known true difference and standard deviation',
+              ]}
+              limitations={[
+                'Sensitive to margin choice',
+                'Requires pre-specification of equivalence bounds',
+              ]}
+              references={[
+                { author: 'Schuirmann, D. J.', year: 1987, title: 'A comparison of the two one-sided tests procedure and the power approach for assessing the equivalence of average bioavailability. Journal of Pharmacokinetics and Biopharmaceutics, 15(6), 657-680.' },
+                { author: 'Lakens, D.', year: 2017, title: 'Equivalence tests: A practical primer for t tests, correlations, and meta-analyses. Social Psychological and Personality Science, 8(4), 355-362.' },
+              ]}
+            />
           </div>
         </div>
       </div>
