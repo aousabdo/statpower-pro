@@ -543,6 +543,41 @@ input[type="range"]::-moz-range-thumb {
 .chart-container-tall {
   width: 100%;
   height: 500px;
+  position: relative;
+}
+
+.chart-watermark {
+  position: absolute;
+  bottom: 36px;
+  right: 24px;
+  opacity: 0.12;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.chart-watermark img {
+  height: 36px;
+  width: auto;
+}
+
+/* Auto-watermark on all chart containers */
+.chart-container,
+.chart-container-tall {
+  position: relative;
+}
+
+.chart-container::after,
+.chart-container-tall::after {
+  content: '';
+  position: absolute;
+  bottom: 32px;
+  right: 20px;
+  width: 90px;
+  height: 54px;
+  background: url('/analytica-logo.png') no-repeat center / contain;
+  opacity: 0.08;
+  pointer-events: none;
+  z-index: 1;
 }
 
 /* ─── Data Table ─────────────────────────────────────────────── */

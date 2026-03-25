@@ -1,7 +1,10 @@
 export default function ChartWatermark() {
   return (
     <div className="chart-watermark">
-      <img src="/logo-dark.png" alt="Analytica DSS" />
+      <img
+        src={import.meta.env.BASE_URL + 'analytica-logo.png'}
+        alt="Analytica DSS"
+      />
     </div>
   );
 }

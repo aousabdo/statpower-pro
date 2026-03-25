@@ -8,13 +8,28 @@ export default function ExportButton({ targetRef, filename = 'statpower-results'
     if (!targetRef.current) return null;
     const el = targetRef.current;
 
-    // Step 1: Capture content as-is (white background, proper contrast)
+    // ── Force light mode during capture so dark-mode text is readable on white ──
+    const root = document.documentElement;
+    const currentTheme = root.getAttribute('data-theme');
+    const wasDark = currentTheme === 'dark';
+
+    if (wasDark) {
+      root.setAttribute('data-theme', 'light');
+      await new Promise((r) => setTimeout(r, 80)); // let browser repaint
+    }
+
+    // Step 1: Capture content with proper light-mode contrast
     const contentCanvas = await html2canvas(el, {
       scale: 2,
       backgroundColor: '#ffffff',
       logging: false,
       useCORS: true,
     });
+
+    // Restore theme immediately after capture
+    if (wasDark) {
+      root.setAttribute('data-theme', currentTheme);
+    }
 
     // Step 2: Load the colored logo
     const logo = new Image();
