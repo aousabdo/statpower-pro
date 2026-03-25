@@ -167,7 +167,8 @@ export default function Reliability() {
 
             {/* About the Math */}
             <MethodologyRef
-              formula="Uses Feldt et al. (1987) approach for testing H₀: α = α₀ vs H₁: α = α₁"
+              formula={"H_0: \\alpha = \\alpha_0 \\quad \\text{vs} \\quad H_1: \\alpha = \\alpha_1"}
+              formulaNote="Uses Feldt et al. (1987) approach for testing Cronbach's alpha."
               assumptions={[
                 'Items are essentially tau-equivalent',
                 'Multivariate normality of item scores',

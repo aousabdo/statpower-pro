@@ -125,7 +125,7 @@ export default function ChiSquare() {
 
             {/* About the Math */}
             <MethodologyRef
-              formula="n = (z_{α/2} + z_β)² / w² — where w = Cohen's effect size for chi-square, df = (r-1)(c-1)"
+              formula={"n = \\frac{(z_{\\alpha/2} + z_\\beta)^2}{w^2} \\quad \\text{where} \\quad df = (r-1)(c-1)"} formulaNote="w = Cohen's effect size for chi-square tests."
               assumptions={[
                 'Expected cell frequencies >= 5',
                 'Independent observations',

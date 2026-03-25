@@ -130,7 +130,7 @@ export default function Regression() {
 
             {/* About the Math */}
             <MethodologyRef
-              formula="n = (z_{α/2} + z_β)² / f² + u + 1 where f² = R²/(1-R²) and u = number of predictors"
+              formula={"n = \\frac{(z_{\\alpha/2} + z_\\beta)^2}{f^2} + u + 1 \\quad \\text{where} \\quad f^2 = \\frac{R^2}{1 - R^2}"} formulaNote="u = number of predictors. Uses Cohen's f² effect size."
               assumptions={[
                 'Linear relationship between predictors and outcome',
                 'Normally distributed residuals',

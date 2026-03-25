@@ -225,7 +225,7 @@ export default function Calculator() {
 
             {/* About the Math */}
             <MethodologyRef
-              formula="n = ((z_{α/2} + z_β)² × 2) / d² — for two-sample t-test. Uses the noncentral t-distribution for exact calculations."
+              formula={"n = \\frac{(z_{\\alpha/2} + z_\\beta)^2 \\cdot 2}{d^2}"} formulaNote="For two-sample t-test. Uses the noncentral t-distribution for exact calculations."
               assumptions={[
                 'Data are normally distributed in each group',
                 'Equal variances across groups (for two-sample)',

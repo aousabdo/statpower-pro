@@ -131,7 +131,8 @@ export default function Equivalence() {
 
             {/* About the Math */}
             <MethodologyRef
-              formula="Uses TOST (Two One-Sided Tests): n = (t_{α,df} + t_{β,df})² × σ² / (δ - |Δ|)² where δ = equivalence margin"
+              formula={"n = \\frac{(t_{\\alpha,\\nu} + t_{\\beta,\\nu})^2 \\cdot \\sigma^2}{(\\delta - |\\Delta|)^2}"}
+              formulaNote="TOST: Two One-Sided Tests. δ = equivalence margin, Δ = true difference."
               assumptions={[
                 'Normal distributions in both groups',
                 'Known true difference and standard deviation',

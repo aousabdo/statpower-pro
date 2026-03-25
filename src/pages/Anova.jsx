@@ -130,7 +130,7 @@ export default function Anova() {
 
             {/* About the Math */}
             <MethodologyRef
-              formula="n per group = ((z_{α/2} + z_β)² × (1 + (k-1)×(1-f²))) / (k × f²) — one-way ANOVA using Cohen's f"
+              formula={"n_{\\text{per group}} = \\frac{(z_{\\alpha/2} + z_\\beta)^2 \\cdot (1 + (k-1)(1-f^2))}{k \\cdot f^2}"} formulaNote="One-way ANOVA using Cohen's f effect size."
               assumptions={[
                 'Normal distributions within each group',
                 'Equal variances across groups (homoscedasticity)',

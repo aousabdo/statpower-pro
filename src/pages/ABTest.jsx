@@ -171,7 +171,8 @@ export default function ABTest() {
 
             {/* About the Math */}
             <MethodologyRef
-              formula="n per variant = (z_{α/2} + z_β)² × (p₁(1-p₁) + p₂(1-p₂)) / (p₂ - p₁)² — with MDE as relative lift"
+              formula={"n_{\\text{per variant}} = \\frac{(z_{\\alpha/2} + z_\\beta)^2 \\cdot (p_1(1-p_1) + p_2(1-p_2))}{(p_2 - p_1)^2}"}
+              formulaNote="MDE expressed as relative lift from baseline conversion rate."
               assumptions={[
                 'Fixed traffic allocation',
                 'Independent visitors',

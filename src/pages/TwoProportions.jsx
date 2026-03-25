@@ -143,7 +143,7 @@ export default function TwoProportions() {
 
             {/* About the Math */}
             <MethodologyRef
-              formula="n = (z_{α/2}√(2p̄q̄) + z_β√(p₁q₁ + p₂q₂))² / (p₁ - p₂)² — arcsine or normal approximation"
+              formula={"n = \\frac{\\left(z_{\\alpha/2}\\sqrt{2\\bar{p}\\bar{q}} + z_\\beta\\sqrt{p_1 q_1 + p_2 q_2}\\right)^2}{(p_1 - p_2)^2}"} formulaNote="Normal approximation for comparing two independent proportions."
               assumptions={[
                 'Independent groups',
                 'Binary outcome',

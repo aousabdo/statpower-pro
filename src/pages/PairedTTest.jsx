@@ -150,7 +150,7 @@ export default function PairedTTest() {
 
             {/* About the Math */}
             <MethodologyRef
-              formula="n = ((z_{α/2} + z_β)² × (1 + (1 - 2ρ))) / d² — uses correlation between pairs to reduce required n"
+              formula={"n = \\frac{(z_{\\alpha/2} + z_\\beta)^2 \\cdot (1 + (1 - 2\\rho))}{d^2}"} formulaNote="Uses the correlation between pairs to reduce the required sample size."
               assumptions={[
                 'Paired observations (within-subjects or matched pairs)',
                 'Normal difference scores',

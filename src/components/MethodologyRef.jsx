@@ -1,7 +1,47 @@
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { ChevronDown, ChevronRight, BookOpen } from 'lucide-react';
+import katex from 'katex';
+import 'katex/dist/katex.min.css';
 
-export default function MethodologyRef({ formula, references = [], assumptions = [], limitations = [] }) {
+function MathBlock({ tex }) {
+  const ref = useRef(null);
+  useEffect(() => {
+    if (ref.current && tex) {
+      try {
+        katex.render(tex, ref.current, {
+          displayMode: true,
+          throwOnError: false,
+          trust: true,
+        });
+      } catch {
+        ref.current.textContent = tex;
+      }
+    }
+  }, [tex]);
+  return <div ref={ref} style={{ overflowX: 'auto', padding: '4px 0' }} />;
+}
+
+function MathInline({ tex }) {
+  const ref = useRef(null);
+  useEffect(() => {
+    if (ref.current && tex) {
+      try {
+        katex.render(tex, ref.current, {
+          displayMode: false,
+          throwOnError: false,
+          trust: true,
+        });
+      } catch {
+        ref.current.textContent = tex;
+      }
+    }
+  }, [tex]);
+  return <span ref={ref} />;
+}
+
+export { MathBlock, MathInline };
+
+export default function MethodologyRef({ formula, formulaNote, references = [], assumptions = [], limitations = [] }) {
   const [expanded, setExpanded] = useState(false);
 
   const sectionStyle = {
@@ -56,10 +96,7 @@ export default function MethodologyRef({ formula, references = [], assumptions =
   const formulaBoxStyle = {
     background: 'var(--bg-tertiary)',
     borderRadius: 'var(--radius-sm)',
-    padding: '12px 16px',
-    fontFamily: 'var(--font-mono)',
-    fontSize: 13,
-    color: 'var(--text-primary)',
+    padding: '16px 20px',
     overflowX: 'auto',
     lineHeight: 1.6,
   };
@@ -89,7 +126,14 @@ export default function MethodologyRef({ formula, references = [], assumptions =
           {formula && (
             <div>
               <div style={subHeadingStyle}>Formula</div>
-              <div style={formulaBoxStyle}>{formula}</div>
+              <div style={formulaBoxStyle}>
+                <MathBlock tex={formula} />
+                {formulaNote && (
+                  <p style={{ fontSize: 12.5, color: 'var(--text-tertiary)', marginTop: 8, marginBottom: 0, lineHeight: 1.5 }}>
+                    {formulaNote}
+                  </p>
+                )}
+              </div>
             </div>
           )}
 
@@ -124,7 +168,7 @@ export default function MethodologyRef({ formula, references = [], assumptions =
               <div>
                 {references.map((ref, i) => (
                   <div key={i} style={refStyle}>
-                    {ref.author} ({ref.year}). <em>{ref.title}</em>.
+                    {ref.author} ({ref.year}). <em>{ref.title}</em>
                   </div>
                 ))}
               </div>

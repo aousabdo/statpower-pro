@@ -184,7 +184,8 @@ export default function SurveySampleSize() {
 
             {/* About the Math */}
             <MethodologyRef
-              formula="n = (z² × p(1-p)) / e² with finite population correction: n_adj = n / (1 + (n-1)/N)"
+              formula={"n = \\frac{z^2 \\cdot p(1-p)}{e^2} \\quad \\text{adjusted:} \\quad n_{\\text{adj}} = \\frac{n}{1 + \\frac{n-1}{N}}"}
+              formulaNote="Cochran's formula with finite population correction. N = population size, e = margin of error."
               assumptions={[
                 'Simple random sampling',
                 'Accurate population estimate',

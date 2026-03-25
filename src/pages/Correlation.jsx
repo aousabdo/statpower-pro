@@ -122,7 +122,7 @@ export default function Correlation() {
 
             {/* About the Math */}
             <MethodologyRef
-              formula="n = ((z_{α/2} + z_β) / C(r))² + 3 where C(r) = 0.5 × ln((1+r)/(1-r)) — Fisher z transformation"
+              formula={"n = \\left(\\frac{z_{\\alpha/2} + z_\\beta}{C(r)}\\right)^2 + 3 \\quad \\text{where} \\quad C(r) = \\frac{1}{2}\\ln\\!\\left(\\frac{1+r}{1-r}\\right)"} formulaNote="Fisher z transformation for Pearson correlation."
               assumptions={[
                 'Bivariate normality',
                 'Linear relationship',
