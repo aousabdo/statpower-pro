@@ -109,20 +109,26 @@ export default function BayesianSampleSize() {
                 <div className="card-body">
                   <div className="chart-container" style={{ position: 'relative' }}>
                     <ResponsiveContainer width="100%" height="100%">
-                      <LineChart data={curveData} margin={{ top: 5, right: 30, left: 10, bottom: 5 }}>
-                        <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f2" />
+                      <LineChart data={curveData} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
+                        <CartesianGrid strokeDasharray="3 3" stroke="var(--border-light)" />
                         <XAxis
                           dataKey="n"
-                          tick={{ fontSize: 11, fill: '#a1a1aa' }}
-                          label={{ value: 'Sample Size (n)', position: 'insideBottom', offset: -5, style: { fontSize: 12, fill: '#a1a1aa' } }}
+                          tick={{ fontSize: 11, fill: 'var(--text-tertiary)' }}
+                          label={{ value: 'Sample Size (n)', position: 'insideBottom', offset: -5, style: { fontSize: 12, fill: 'var(--text-tertiary)' } }}
                         />
                         <YAxis
                           scale="log"
                           domain={['auto', 'auto']}
                           allowDataOverflow
-                          tick={{ fontSize: 11, fill: '#a1a1aa' }}
-                          tickFormatter={(v) => v >= 1000 ? `${(v/1000).toFixed(0)}k` : v >= 1 ? v.toFixed(0) : v.toFixed(2)}
-                          label={{ value: 'Bayes Factor (BF₁₀) — log scale', angle: -90, position: 'insideLeft', offset: 10, style: { fontSize: 12, fill: '#a1a1aa' } }}
+                          width={70}
+                          tick={{ fontSize: 10, fill: 'var(--text-tertiary)' }}
+                          tickFormatter={(v) => {
+                            if (v >= 1e6) return `${(v/1e6).toFixed(0)}M`;
+                            if (v >= 1e3) return `${(v/1e3).toFixed(0)}K`;
+                            if (v >= 1) return v.toFixed(0);
+                            return v.toFixed(2);
+                          }}
+                          label={{ value: 'BF₁₀ (log scale)', angle: -90, position: 'insideLeft', offset: 0, style: { fontSize: 11, fill: 'var(--text-tertiary)' } }}
                         />
                         <Tooltip
                           contentStyle={{ borderRadius: 8, border: '1px solid #e4e4e7', fontSize: 13 }}

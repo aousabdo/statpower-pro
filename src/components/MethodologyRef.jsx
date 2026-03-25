@@ -116,7 +116,14 @@ export default function MethodologyRef({ formula, formulaNote, references = [], 
     <div style={sectionStyle}>
       <button style={headerStyle} onClick={() => setExpanded(!expanded)}>
         <BookOpen size={16} style={{ color: 'var(--accent)', flexShrink: 0 }} />
-        <span style={{ flex: 1 }}>About the Math</span>
+        <span style={{ flex: 1 }}>
+          About the Math
+          {!expanded && formulaNote && (
+            <span style={{ fontWeight: 400, fontSize: 12, color: 'var(--text-tertiary)', marginLeft: 8 }}>
+              — {formulaNote}
+            </span>
+          )}
+        </span>
         <Chevron size={16} style={{ color: 'var(--text-tertiary)' }} />
       </button>
 

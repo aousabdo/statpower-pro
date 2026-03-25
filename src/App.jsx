@@ -4,7 +4,7 @@ import {
   SquareAsterisk, BookOpen, Menu, X, Link2, TrendingUp, Percent, Equal,
   Table2, Target, ArrowRightLeft, Sparkles, BrainCircuit, ScatterChart,
   FlaskConical, ClipboardList, Shield, Users, Home as HomeIcon,
-  HelpCircle, LayoutDashboard,
+  HelpCircle, LayoutDashboard, ChevronDown, ChevronRight,
 } from 'lucide-react';
 import CalculatorPage from './pages/Calculator';
 import Comparison from './pages/Comparison';
@@ -37,7 +37,7 @@ import CiteButton from './components/CiteButton';
 import KeyboardShortcuts from './components/KeyboardShortcuts';
 
 const NAV_ITEMS = [
-  { id: 'home', label: 'Home', icon: HomeIcon, section: '' },
+  { id: 'home', label: 'Home', icon: HomeIcon },
   { id: 'wizard', label: 'Which Test?', icon: HelpCircle },
   { id: 'dashboard', label: 'Compare All Tests', icon: LayoutDashboard },
   { id: 'calculator', label: 'T-Test', icon: Calculator, section: 'Power Analysis' },
@@ -91,12 +91,38 @@ const PAGES = {
   guide: Guide,
 };
 
+// Group nav items by section
+function buildNavSections() {
+  const sections = [];
+  let currentSection = null;
+  let currentItems = [];
+
+  for (const item of NAV_ITEMS) {
+    if (item.section) {
+      if (currentItems.length) {
+        sections.push({ label: currentSection, items: currentItems });
+      }
+      currentSection = item.section;
+      currentItems = [item];
+    } else {
+      currentItems.push(item);
+    }
+  }
+  if (currentItems.length) {
+    sections.push({ label: currentSection, items: currentItems });
+  }
+  return sections;
+}
+
+const NAV_SECTIONS = buildNavSections();
+
 export default function App() {
   const [activePage, setActivePage] = useState(() => {
-    const hash = window.location.hash.replace('#', '');
+    const hash = window.location.hash.replace('#', '').split('?')[0];
     return hash && (PAGES[hash] || hash === 'home' || hash === 'wizard' || hash === 'dashboard') ? hash : 'home';
   });
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [collapsed, setCollapsed] = useState({});
 
   const handleNav = useCallback((id) => {
     setActivePage(id);
@@ -104,10 +130,17 @@ export default function App() {
     window.location.hash = id;
   }, []);
 
-  // Listen for hash changes (back/forward browser buttons)
+  // Dynamic page title
+  useEffect(() => {
+    const item = NAV_ITEMS.find(i => i.id === activePage);
+    const label = item?.label || 'Home';
+    document.title = `${label} — StatPower Pro | Analytica DSS`;
+  }, [activePage]);
+
+  // Hash routing
   useEffect(() => {
     const onHash = () => {
-      const hash = window.location.hash.replace('#', '');
+      const hash = window.location.hash.replace('#', '').split('?')[0];
       if (hash && (PAGES[hash] || hash === 'home' || hash === 'wizard' || hash === 'dashboard')) {
         setActivePage(hash);
       }
@@ -116,7 +149,10 @@ export default function App() {
     return () => window.removeEventListener('hashchange', onHash);
   }, []);
 
-  // Render the active page
+  const toggleSection = (label) => {
+    setCollapsed(prev => ({ ...prev, [label]: !prev[label] }));
+  };
+
   const renderPage = () => {
     if (activePage === 'home') return <HomeLanding onNavigate={handleNav} />;
     if (activePage === 'wizard') return <TestWizard onNavigate={handleNav} />;
@@ -147,7 +183,11 @@ export default function App() {
       <aside className={`sidebar ${sidebarOpen ? 'open' : ''}`}>
         <div className="sidebar-header">
           <div className="sidebar-brand" style={{ cursor: 'pointer' }} onClick={() => handleNav('home')}>
-            <div className="sidebar-brand-icon">SP</div>
+            <img
+              src={import.meta.env.BASE_URL + 'analytica-logo.png'}
+              alt="Analytica"
+              style={{ height: 32, width: 'auto' }}
+            />
             <div className="sidebar-brand-text">
               <span className="sidebar-brand-name">StatPower Pro</span>
               <span className="sidebar-brand-sub">Research Design Toolkit</span>
@@ -156,23 +196,34 @@ export default function App() {
         </div>
 
         <nav className="sidebar-nav">
-          {NAV_ITEMS.map((item) => (
-            <div key={item.id}>
-              {item.section !== undefined && item.section !== '' && (
-                <div className="nav-section-label">{item.section}</div>
-              )}
-              {item.section === '' && item.id === 'home' && (
-                <div className="nav-section-label" style={{ paddingTop: 4 }} />
-              )}
-              <button
-                className={`nav-item ${activePage === item.id ? 'active' : ''}`}
-                onClick={() => handleNav(item.id)}
-              >
-                <item.icon size={16} />
-                {item.label}
-              </button>
-            </div>
-          ))}
+          {NAV_SECTIONS.map((section, sIdx) => {
+            const isCollapsible = section.label !== null;
+            const isCollapsed = collapsed[section.label];
+
+            return (
+              <div key={sIdx}>
+                {isCollapsible && (
+                  <div
+                    className="nav-section-label nav-section-toggle"
+                    onClick={() => toggleSection(section.label)}
+                  >
+                    <span>{section.label}</span>
+                    {isCollapsed ? <ChevronRight size={12} /> : <ChevronDown size={12} />}
+                  </div>
+                )}
+                {!isCollapsed && section.items.map((item) => (
+                  <button
+                    key={item.id}
+                    className={`nav-item ${activePage === item.id ? 'active' : ''}`}
+                    onClick={() => handleNav(item.id)}
+                  >
+                    <item.icon size={16} />
+                    {item.label}
+                  </button>
+                ))}
+              </div>
+            );
+          })}
         </nav>
 
         <div className="sidebar-footer">
@@ -194,9 +245,11 @@ export default function App() {
         </div>
       </aside>
 
-      {/* Main content */}
+      {/* Main content with page transition */}
       <main className="main-content">
-        {renderPage()}
+        <div key={activePage} className="page-transition">
+          {renderPage()}
+        </div>
       </main>
     </div>
   );

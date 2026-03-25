@@ -166,15 +166,11 @@ export default function Calculator() {
               </div>
 
               {/* Interpretation */}
-              <div className="card" style={{ marginBottom: 24 }}>
-                <div className="card-body">
-                  <p style={{ fontSize: 14, lineHeight: 1.7, color: 'var(--text-secondary)', margin: 0 }}>
-                    You need <strong style={{ color: 'var(--text-primary)' }}>{result.n} participants per group</strong>
-                    {result.testType === 'two.sample' && <> (<strong style={{ color: 'var(--text-primary)' }}>{result.total} total</strong>)</>}
-                    {' '}to detect a {effectSize <= 0.2 ? 'small' : effectSize <= 0.5 ? 'medium' : 'large'} effect
-                    (d = {effectSize}) with {(power * 100).toFixed(0)}% power at α = {sigLevel} ({testLabel.toLowerCase()} t-test).
-                  </p>
-                </div>
+              <div className="interpretation-card" style={{ marginBottom: 24 }}>
+                You need <strong>{result.n} participants per group</strong>
+                {result.testType === 'two.sample' && <> (<strong>{result.total} total</strong>)</>}
+                {' '}to detect a {effectSize <= 0.2 ? 'small' : effectSize <= 0.5 ? 'medium' : 'large'} effect
+                (d = {effectSize}) with {(power * 100).toFixed(0)}% power at α = {sigLevel} ({testLabel.toLowerCase()} t-test).
               </div>
 
               {/* Power curve */}
