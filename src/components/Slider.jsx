@@ -1,4 +1,4 @@
-export default function Slider({ label, sublabel, value, onChange, min, max, step = 0.01, format }) {
+export default function Slider({ label, sublabel, value, onChange, min, max, step = 0.01, format, presets }) {
   const display = format ? format(value) : value;
 
   return (
@@ -19,6 +19,20 @@ export default function Slider({ label, sublabel, value, onChange, min, max, ste
           value={value}
           onChange={(e) => onChange(parseFloat(e.target.value))}
         />
+        {presets && (
+          <div className="preset-chips">
+            {presets.map((p) => (
+              <button
+                key={p.label}
+                className={`preset-chip ${Math.abs(value - p.value) < 0.001 ? 'active' : ''}`}
+                onClick={() => onChange(p.value)}
+                type="button"
+              >
+                {p.label}
+              </button>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );

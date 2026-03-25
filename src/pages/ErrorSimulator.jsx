@@ -73,16 +73,16 @@ export default function ErrorSimulator() {
                 <div className="chart-container-tall"><ChartWatermark />
                   <ResponsiveContainer width="100%" height="100%">
                     <AreaChart data={chartData} margin={{ top: 5, right: 30, left: 10, bottom: 5 }}>
-                      <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f2" />
+                      <CartesianGrid strokeDasharray="3 3" stroke="var(--border-light)" />
                       <XAxis
                         dataKey="x"
                         type="number"
                         domain={['dataMin', 'dataMax']}
-                        tick={{ fontSize: 11, fill: '#a1a1aa' }}
-                        label={{ value: 'Sample Mean', position: 'insideBottom', offset: -5, style: { fontSize: 12, fill: '#a1a1aa' } }}
+                        tick={{ fontSize: 11, fill: 'var(--text-tertiary)' }}
+                        label={{ value: 'Sample Mean', position: 'insideBottom', offset: -5, style: { fontSize: 12, fill: 'var(--text-tertiary)' } }}
                       />
-                      <YAxis tick={{ fontSize: 11, fill: '#a1a1aa' }} label={{ value: 'Density', angle: -90, position: 'insideLeft', offset: 10, style: { fontSize: 12, fill: '#a1a1aa' } }} />
-                      <Tooltip contentStyle={{ borderRadius: 8, border: '1px solid #e4e4e7', fontSize: 13 }} formatter={(v) => v.toFixed(4)} />
+                      <YAxis tick={{ fontSize: 11, fill: 'var(--text-tertiary)' }} label={{ value: 'Density', angle: -90, position: 'insideLeft', offset: 10, style: { fontSize: 12, fill: 'var(--text-tertiary)' } }} />
+                      <Tooltip contentStyle={{ borderRadius: 8, border: '1px solid var(--border)', fontSize: 13, background: 'var(--bg-secondary)', color: 'var(--text-primary)' }} formatter={(v) => v.toFixed(4)} cursor={{ strokeDasharray: '3 3' }} />
                       <ReferenceLine x={result.criticalValue} stroke="#dc2626" strokeDasharray="5 5" label={{ value: `+crit = ${result.criticalValue}`, position: 'top', fontSize: 10, fill: '#dc2626' }} />
                       <ReferenceLine x={result.negativeCritical} stroke="#dc2626" strokeDasharray="5 5" label={{ value: `-crit = ${result.negativeCritical}`, position: 'top', fontSize: 10, fill: '#dc2626' }} />
                       <Area type="monotone" dataKey="null" stroke="#6366f1" fill="#6366f1" fillOpacity={0.15} strokeWidth={2} name="Null (H₀)" dot={false} />
