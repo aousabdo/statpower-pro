@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <defs>
+    <linearGradient id="g1" x1="0" y1="1" x2="1" y2="0">
+      <stop offset="0%" stop-color="#0d9488"/>
+      <stop offset="100%" stop-color="#2563eb"/>
+    </linearGradient>
+  </defs>
+  <rect width="64" height="64" rx="14" fill="#0f172a"/>
+  <!-- Rising bars -->
+  <rect x="12" y="40" width="8" height="14" rx="2" fill="url(#g1)" opacity="0.5"/>
+  <rect x="23" y="32" width="8" height="22" rx="2" fill="url(#g1)" opacity="0.7"/>
+  <rect x="34" y="22" width="8" height="32" rx="2" fill="url(#g1)" opacity="0.85"/>
+  <rect x="45" y="12" width="8" height="42" rx="2" fill="url(#g1)"/>
+  <!-- Power curve overlay -->
+  <path d="M10 48 Q20 46 28 38 Q36 28 44 16 Q48 10 54 8" stroke="white" stroke-width="2.5" fill="none" stroke-linecap="round" opacity="0.9"/>
+</svg>

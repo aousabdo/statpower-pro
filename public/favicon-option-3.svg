@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <defs>
+    <linearGradient id="g3" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#0d9488"/>
+      <stop offset="100%" stop-color="#2563eb"/>
+    </linearGradient>
+  </defs>
+  <rect width="64" height="64" rx="14" fill="#0f172a"/>
+  <!-- Stylized beta symbol -->
+  <text x="32" y="48" font-family="Georgia, serif" font-size="44" font-weight="700" fill="url(#g3)" text-anchor="middle">β</text>
+  <!-- Small "1-" prefix -->
+  <text x="14" y="22" font-family="Inter, sans-serif" font-size="12" font-weight="600" fill="#64748b" text-anchor="middle">1−</text>
+</svg>
