@@ -5,9 +5,9 @@ import { convertEffectSize } from '../lib/statistics';
 const EFFECT_TYPES = [
   { value: 'd', label: "Cohen's d" },
   { value: 'r', label: 'Correlation r' },
-  { value: 'eta2', label: 'Eta-squared \u03b7\u00b2' },
+  { value: 'eta2', label: 'Eta-squared η²' },
   { value: 'f', label: "Cohen's f" },
-  { value: 'f2', label: 'f\u00b2' },
+  { value: 'f2', label: 'f²' },
   { value: 'or', label: 'Odds Ratio' },
   { value: 'w', label: "Cohen's w" },
 ];
@@ -46,7 +46,7 @@ export default function EffectSizeConverter() {
     <>
       <div className="page-header">
         <h1 className="page-title">Effect Size Converter</h1>
-        <p className="page-subtitle">Convert between Cohen's d, r, \u03b7\u00b2, f, f\u00b2, odds ratio, and w</p>
+        <p className="page-subtitle">Convert between Cohen's d, r, η², f, f², odds ratio, and w</p>
       </div>
       <div className="page-body">
         <div style={{ maxWidth: 720, margin: '0 auto' }}>
@@ -103,7 +103,7 @@ export default function EffectSizeConverter() {
                     style={r.isSelf ? { borderColor: '#2563eb', borderWidth: 2 } : {}}
                   >
                     <div className="stat-value" style={r.isSelf ? { color: '#2563eb' } : {}}>
-                      {isFinite(r.value) ? r.value : '\u2014'}
+                      {isFinite(r.value) ? r.value : '—'}
                     </div>
                     <div className="stat-label">{r.label}</div>
                   </div>

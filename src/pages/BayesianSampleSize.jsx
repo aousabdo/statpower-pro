@@ -56,7 +56,7 @@ export default function BayesianSampleSize() {
 
               <Slider
                 label="Target Bayes Factor"
-                sublabel="BF\u2081\u2080"
+                sublabel="BF₁₀"
                 value={targetBF}
                 onChange={setTargetBF}
                 min={3}
@@ -89,7 +89,7 @@ export default function BayesianSampleSize() {
                   <div className="result-card">
                     <div className="result-label">Required N per Group</div>
                     <div className="result-value" style={{ color: '#14b8a6' }}>{result.n}</div>
-                    <div className="result-detail">to achieve BF\u2081\u2080 = {result.targetBF}</div>
+                    <div className="result-detail">to achieve BF₁₀ = {result.targetBF}</div>
                   </div>
                 </div>
 
@@ -114,7 +114,7 @@ export default function BayesianSampleSize() {
                   <div className="card-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                     <div>
                       <h2 className="card-title">Bayes Factor vs. Sample Size</h2>
-                      <p className="card-subtitle">Expected BF\u2081\u2080 as sample size increases (d = {effectSize})</p>
+                      <p className="card-subtitle">Expected BF₁₀ as sample size increases (d = {effectSize})</p>
                     </div>
                     <ExportButton targetRef={exportRef} filename="bayesian-sample-size" />
                   </div>
@@ -129,12 +129,16 @@ export default function BayesianSampleSize() {
                             label={{ value: 'Sample Size (n)', position: 'insideBottom', offset: -5, style: { fontSize: 12, fill: '#a1a1aa' } }}
                           />
                           <YAxis
+                            scale="log"
+                            domain={['auto', 'auto']}
+                            allowDataOverflow
                             tick={{ fontSize: 11, fill: '#a1a1aa' }}
-                            label={{ value: 'Bayes Factor (BF\u2081\u2080)', angle: -90, position: 'insideLeft', offset: 10, style: { fontSize: 12, fill: '#a1a1aa' } }}
+                            tickFormatter={(v) => v >= 1000 ? `${(v/1000).toFixed(0)}k` : v >= 1 ? v.toFixed(0) : v.toFixed(2)}
+                            label={{ value: 'Bayes Factor (BF₁₀) — log scale', angle: -90, position: 'insideLeft', offset: 10, style: { fontSize: 12, fill: '#a1a1aa' } }}
                           />
                           <Tooltip
                             contentStyle={{ borderRadius: 8, border: '1px solid #e4e4e7', fontSize: 13 }}
-                            formatter={(v) => [v.toFixed(3), 'BF\u2081\u2080']}
+                            formatter={(v) => [v.toFixed(3), 'BF₁₀']}
                             labelFormatter={(v) => `n = ${v}`}
                           />
                           <ReferenceLine

@@ -69,7 +69,7 @@ export default function SurveySampleSize() {
                 min={0.01}
                 max={0.1}
                 step={0.005}
-                format={v => `\u00B1${(v * 100).toFixed(1)}%`}
+                format={v => `±${(v * 100).toFixed(1)}%`}
               />
 
               <div className="form-group">
@@ -112,7 +112,7 @@ export default function SurveySampleSize() {
 
                 <div className="result-grid">
                   <div className="stat-card">
-                    <div className="stat-value">{isFinite(result.population) ? result.population.toLocaleString() : '\u221E'}</div>
+                    <div className="stat-value">{isFinite(result.population) ? result.population.toLocaleString() : '∞'}</div>
                     <div className="stat-label">Population</div>
                   </div>
                   <div className="stat-card">
@@ -144,8 +144,8 @@ export default function SurveySampleSize() {
                           <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f2" />
                           <XAxis dataKey="n" label={{ value: 'Sample Size (n)', position: 'insideBottom', offset: -5, style: { fontSize: 12, fill: '#a1a1aa' } }} tick={{ fontSize: 11, fill: '#a1a1aa' }} />
                           <YAxis label={{ value: 'Margin of Error', angle: -90, position: 'insideLeft', offset: 10, style: { fontSize: 12, fill: '#a1a1aa' } }} tick={{ fontSize: 11, fill: '#a1a1aa' }} tickFormatter={v => `${(v * 100).toFixed(1)}%`} />
-                          <Tooltip contentStyle={{ borderRadius: 8, border: '1px solid #e4e4e7', fontSize: 13 }} formatter={(v) => [`\u00B1${(v * 100).toFixed(2)}%`, 'Margin of Error']} labelFormatter={(v) => `n = ${v}`} />
-                          <ReferenceLine y={result.marginOfError} stroke="#a1a1aa" strokeDasharray="5 5" label={{ value: `Target: \u00B1${(result.marginOfError * 100).toFixed(1)}%`, position: 'right', fontSize: 11, fill: '#a1a1aa' }} />
+                          <Tooltip contentStyle={{ borderRadius: 8, border: '1px solid #e4e4e7', fontSize: 13 }} formatter={(v) => [`±${(v * 100).toFixed(2)}%`, 'Margin of Error']} labelFormatter={(v) => `n = ${v}`} />
+                          <ReferenceLine y={result.marginOfError} stroke="#a1a1aa" strokeDasharray="5 5" label={{ value: `Target: ±${(result.marginOfError * 100).toFixed(1)}%`, position: 'right', fontSize: 11, fill: '#a1a1aa' }} />
                           <ReferenceLine x={result.n} stroke="#a1a1aa" strokeDasharray="5 5" />
                           <Line type="monotone" dataKey="marginOfError" stroke="#22c55e" strokeWidth={2.5} dot={false} activeDot={{ r: 5, fill: '#22c55e' }} />
                         </LineChart>

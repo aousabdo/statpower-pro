@@ -51,7 +51,7 @@ function getEffectLabel(testType) {
     case 'anova': return "Cohen's f";
     case 'chisq': return "Cohen's w";
     case 'correlation': return 'r';
-    case 'regression': return 'f\u00B2';
+    case 'regression': return 'f²';
     default: return 'Effect Size';
   }
 }
@@ -72,7 +72,7 @@ export default function SampleSizeTable() {
     if (testType === 'regression') extraParams.u = predictors;
     if (testType === 'chisq') extraParams.df = df;
 
-    const tableData = sampleSizeTable({
+    const res = sampleSizeTable({
       effectSizes,
       powers: POWER_LEVELS,
       sigLevel,
@@ -80,7 +80,7 @@ export default function SampleSizeTable() {
       extraParams,
     });
 
-    setResult({ tableData, effectSizes, testType, sigLevel });
+    setResult({ tableData: res.table, effectSizes, testType, sigLevel });
   };
 
   useEffect(() => { handleCalculate(); }, []);

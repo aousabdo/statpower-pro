@@ -9,8 +9,8 @@ const EFFECT_TYPES = [
   { value: 'r', label: 'Correlation r' },
   { value: 'f', label: "Cohen's f" },
   { value: 'w', label: "Cohen's w" },
-  { value: 'eta2', label: 'Eta-squared \u03b7\u00b2' },
-  { value: 'f2', label: 'f\u00b2' },
+  { value: 'eta2', label: 'Eta-squared η²' },
+  { value: 'f2', label: 'f²' },
 ];
 
 const BADGE_COLORS = {
@@ -165,8 +165,8 @@ export default function EffectSizeInterpreter() {
                             contentStyle={{ borderRadius: 8, border: '1px solid #e4e4e7', fontSize: 13 }}
                             formatter={(v) => v.toFixed(4)}
                           />
-                          <Area type="monotone" dataKey="null" stroke="#6366f1" fill="#6366f1" fillOpacity={0.3} strokeWidth={2} name="Control (H\u2080)" dot={false} />
-                          <Area type="monotone" dataKey="alt" stroke="#a855f7" fill="#a855f7" fillOpacity={0.3} strokeWidth={2} name="Treatment (H\u2081)" dot={false} />
+                          <Area type="monotone" dataKey="null" stroke="#6366f1" fill="#6366f1" fillOpacity={0.3} strokeWidth={2} name="Control (H₀)" dot={false} />
+                          <Area type="monotone" dataKey="alt" stroke="#a855f7" fill="#a855f7" fillOpacity={0.3} strokeWidth={2} name="Treatment (H₁)" dot={false} />
                         </AreaChart>
                       </ResponsiveContainer>
                       <div style={{ position: 'absolute', bottom: 12, right: 16, opacity: 0.12, pointerEvents: 'none' }}>

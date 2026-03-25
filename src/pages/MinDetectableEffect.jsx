@@ -102,7 +102,7 @@ export default function MinDetectableEffect() {
 
               <Slider
                 label="Power"
-                sublabel="1 - \u03b2"
+                sublabel="1 - β"
                 value={power}
                 onChange={setPower}
                 min={0.5}
@@ -112,7 +112,7 @@ export default function MinDetectableEffect() {
 
               <Slider
                 label="Significance Level"
-                sublabel="\u03b1"
+                sublabel="α"
                 value={sigLevel}
                 onChange={setSigLevel}
                 min={0.01}

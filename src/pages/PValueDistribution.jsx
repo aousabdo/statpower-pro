@@ -70,7 +70,7 @@ export default function PValueDistribution() {
 
               <Slider
                 label="Significance Level"
-                sublabel="\u03b1"
+                sublabel="α"
                 value={sigLevel}
                 onChange={setSigLevel}
                 min={0.01}
@@ -91,15 +91,15 @@ export default function PValueDistribution() {
                 <div className="result-grid" style={{ marginBottom: 24 }}>
                   <div className="stat-card">
                     <div className="stat-value" style={{ color: '#059669' }}>{(power * 100).toFixed(1)}%</div>
-                    <div className="stat-label">Power (1 - \u03b2)</div>
+                    <div className="stat-label">Power (1 - β)</div>
                   </div>
                   <div className="stat-card">
                     <div className="stat-value" style={{ color: '#dc2626' }}>{(typeIRate * 100).toFixed(1)}%</div>
-                    <div className="stat-label">Type I Error (\u03b1)</div>
+                    <div className="stat-label">Type I Error (α)</div>
                   </div>
                   <div className="stat-card">
                     <div className="stat-value" style={{ color: '#d97706' }}>{(typeIIRate * 100).toFixed(1)}%</div>
-                    <div className="stat-label">Type II Error (\u03b2)</div>
+                    <div className="stat-label">Type II Error (β)</div>
                   </div>
                 </div>
 
@@ -108,7 +108,7 @@ export default function PValueDistribution() {
                   <div className="card-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                     <div>
                       <h2 className="card-title">P-Value Density</h2>
-                      <p className="card-subtitle">Distribution of p-values under H\u2080 and H\u2081</p>
+                      <p className="card-subtitle">Distribution of p-values under H₀ and H₁</p>
                     </div>
                     <ExportButton targetRef={exportRef} filename="pvalue-distribution" />
                   </div>
@@ -130,17 +130,17 @@ export default function PValueDistribution() {
                           />
                           <Tooltip
                             contentStyle={{ borderRadius: 8, border: '1px solid #e4e4e7', fontSize: 13 }}
-                            formatter={(v, name) => [v.toFixed(4), name === 'h0' ? 'H\u2080 (null)' : 'H\u2081 (alternative)']}
+                            formatter={(v, name) => [v.toFixed(4), name === 'h0' ? 'H₀ (null)' : 'H₁ (alternative)']}
                             labelFormatter={(v) => `p = ${v}`}
                           />
                           <ReferenceLine
                             x={sigLevel}
                             stroke="#dc2626"
                             strokeDasharray="5 5"
-                            label={{ value: `\u03b1 = ${sigLevel}`, position: 'top', fontSize: 11, fill: '#dc2626' }}
+                            label={{ value: `α = ${sigLevel}`, position: 'top', fontSize: 11, fill: '#dc2626' }}
                           />
-                          <Area type="monotone" dataKey="h0" stroke="#94a3b8" fill="#94a3b8" fillOpacity={0.15} strokeWidth={2} name="H\u2080 (null)" dot={false} />
-                          <Area type="monotone" dataKey="h1" stroke="#6366f1" fill="#6366f1" fillOpacity={0.15} strokeWidth={2} name="H\u2081 (alternative)" dot={false} />
+                          <Area type="monotone" dataKey="h0" stroke="#94a3b8" fill="#94a3b8" fillOpacity={0.15} strokeWidth={2} name="H₀ (null)" dot={false} />
+                          <Area type="monotone" dataKey="h1" stroke="#6366f1" fill="#6366f1" fillOpacity={0.15} strokeWidth={2} name="H₁ (alternative)" dot={false} />
                         </AreaChart>
                       </ResponsiveContainer>
                       <div style={{ position: 'absolute', bottom: 12, right: 16, opacity: 0.12, pointerEvents: 'none' }}>
@@ -154,13 +154,13 @@ export default function PValueDistribution() {
                 <div className="card animate-in">
                   <div className="card-body" style={{ fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.7 }}>
                     <p style={{ marginBottom: 12 }}>
-                      <strong>Under H\u2080 (null hypothesis):</strong> P-values follow a uniform distribution between 0 and 1, shown by the flat grey line. Only {(sigLevel * 100).toFixed(0)}% of p-values fall below the significance threshold by chance.
+                      <strong>Under H₀ (null hypothesis):</strong> P-values follow a uniform distribution between 0 and 1, shown by the flat grey line. Only {(sigLevel * 100).toFixed(0)}% of p-values fall below the significance threshold by chance.
                     </p>
                     <p style={{ marginBottom: 12 }}>
-                      <strong>Under H\u2081 (alternative hypothesis):</strong> P-values are skewed toward 0, shown by the indigo curve. The proportion of p-values below \u03b1 = {sigLevel} equals the statistical power ({(power * 100).toFixed(1)}%).
+                      <strong>Under H₁ (alternative hypothesis):</strong> P-values are skewed toward 0, shown by the indigo curve. The proportion of p-values below α = {sigLevel} equals the statistical power ({(power * 100).toFixed(1)}%).
                     </p>
                     <p>
-                      The vertical red line marks the significance level. Increasing the effect size or sample size pushes the H\u2081 distribution further left, increasing power.
+                      The vertical red line marks the significance level. Increasing the effect size or sample size pushes the H₁ distribution further left, increasing power.
                     </p>
                   </div>
                 </div>

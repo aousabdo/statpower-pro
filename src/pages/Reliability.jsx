@@ -43,7 +43,7 @@ export default function Reliability() {
             <div className="card-body">
               <Slider
                 label="Null Alpha"
-                sublabel="&alpha;\u2080 (alpha to exceed)"
+                sublabel="α₀ (alpha to exceed)"
                 value={alpha0}
                 onChange={setAlpha0}
                 min={0.5}
@@ -52,7 +52,7 @@ export default function Reliability() {
               />
               <Slider
                 label="Expected Alpha"
-                sublabel="&alpha;\u2081"
+                sublabel="α₁"
                 value={alpha1}
                 onChange={setAlpha1}
                 min={0.6}
